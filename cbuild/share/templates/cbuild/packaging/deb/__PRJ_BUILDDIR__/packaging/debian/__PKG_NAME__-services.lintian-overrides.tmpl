@@ -1,0 +1,7 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["SVC"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+%{ ${PKG_NAME} }%-services: hardening-no-fortify-functions
+%{ ${PKG_NAME} }%-services: init.d-script-does-not-implement-required-option
+% fi

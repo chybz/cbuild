@@ -1,0 +1,36 @@
+% PNAME=${PRJ_NAME^^}
+% PNAME=${PNAME//-/_}
+#ifndef __%{ ${PNAME} }%_UNIT_TEST_H__
+#define __%{ ${PNAME} }%_UNIT_TEST_H__
+
+#include <stdlib.h>
+
+#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test_log_formatter.hpp>
+#include <%{ ${PRJ_NAME} }%/unit_test/tap_formatter.hpp>
+
+// Set up the unit test framework to use an TAP-friendly log formatter.
+struct tap_config
+{
+    tap_config()
+    {
+        setenv("CB_TEST", "1", 1);
+
+        boost::unit_test::unit_test_log.set_formatter(
+            new cbuild::%{ ${PRJ_NAME} }%::unit_test::tap_formatter
+        );
+        boost::unit_test::unit_test_log.set_threshold_level(
+            boost::unit_test::log_successful_tests
+        );
+        boost::unit_test::results_reporter::set_level(
+            boost::unit_test::NO_REPORT
+        );
+    }
+
+    ~tap_config() {}
+};
+
+// Call our fixture.
+BOOST_GLOBAL_FIXTURE(tap_config);
+
+#endif // __%{ ${PNAME} }%_UNIT_TEST_H__

@@ -1,0 +1,62 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["SVC"]}))
+
+if [[ ! $SERVICE ]]; then
+    if (($OPTS["process"])); then
+        OPTS["recall-foreach"]="SERVICE ${PRJ_SVCS[@]}"
+        OPTS["label"]="generating service inir files"
+    fi
+else
+    OPTS["rename-to"]="${PKG_NAME}-services.${SERVICE}.init"
+%{/Bash}%
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          %{ ${SERVICE} }%
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     true
+# Short-Description: Start/stop %{ ${PKG_NAME} }% %{ ${SERVICE} }%
+### END INIT INFO
+
+set -e
+
+%{ ${SERVICE^^} }%_DEFAULTS_FILE=/etc/default/%{ ${SERVICE} }%
+
+. /lib/lsb/init-functions
+
+function do_if_enabled() {
+    local WHAT=$1
+
+    if "$%{ ${SERVICE} }%_ENABLE"; then
+        svinitd %{ ${SERVICE} }% $WHAT
+    else
+        log_warning_msg "%{ ${SERVICE} }% daemon not enabled in $%{ ${SERVICE} }%_DEFAULTS_FILE, not ${WHAT}ing..."
+    fi
+}
+
+if [ -s $%{ ${SERVICE} }%_DEFAULTS_FILE ]; then
+    . $%{ ${SERVICE} }%_DEFAULTS_FILE
+    case "x$%{ ${SERVICE} }%_ENABLE" in
+        xtrue|xfalse)
+        ;;
+
+        *)
+        log_failure_msg "Value of %{ ${SERVICE} }%_ENABLE in $%{ ${SERVICE} }%_DEFAULTS_FILE must be either 'true' or 'false';"
+        log_failure_msg "not starting %{ ${SERVICE} }% daemon."
+        exit 1
+        ;;
+    esac
+fi
+
+case "$1" in
+    start|restart)
+        do_if_enabled $1
+        ;;
+
+    *)
+        svinitd %{ ${SERVICE} }% $1
+        ;;
+esac
+% fi

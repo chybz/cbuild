@@ -1,0 +1,6 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["BIN_LIB"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+usr/lib/lib*.so.*
+% fi

@@ -1,0 +1,45 @@
+% if ((${#TARGET_INC[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_INC[@]})
+include_directories(
+    %{ $LIST }%
+)
+
+% fi
+% if ((${#TARGET_LINK[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_LINK[@]})
+link_directories(
+    %{ $LIST }%
+)
+
+% fi
+%
+% LIST=$(cp_ajoin "\n    " ${SOURCES[@]} ${HEADERS[@]})
+add_executable(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+
+set_target_properties(
+    %{ $TARGET_BUILD_NAME }%
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY %{ $PRJ_TSTDIR }%
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG %{ $PRJ_TSTDIR }%
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE %{ $PRJ_TSTDIR }%
+    OUTPUT_NAME %{ $TARGET }%.t
+)
+% if ((${#TARGET_LIBS[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_LIBS[@]})
+
+target_link_libraries(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+% fi
+% if ((${#TARGET_DEPS[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_DEPS[@]})
+
+add_dependencies(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+% fi

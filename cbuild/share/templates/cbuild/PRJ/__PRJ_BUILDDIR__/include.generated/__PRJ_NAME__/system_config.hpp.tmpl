@@ -1,0 +1,217 @@
+% PNAME=${PRJ_NAME^^}
+% PNAME=${PNAME//-/_}
+#ifndef __%{ ${PNAME} }%_SYSTEM_CONFIG_H__
+#define __%{ ${PNAME} }%_SYSTEM_CONFIG_H__
+
+#include <unistd.h>
+
+#include <iostream>
+#include <map>
+#include <vector>
+#include <string>
+#include <cstring>
+#include <cstdlib>
+#include <stdexcept>
+
+#include <sys/types.h>
+#include <dirent.h>
+#include <limits.h>
+
+#ifdef DARWIN
+#include <mach-o/dyld.h>
+#endif
+
+#include <%{ ${PRJ_NAME} }%/config.h>
+
+namespace %{ ${PRJ_NAME} }% {
+
+class system_config {
+public:
+    typedef std::vector<std::string> plugin_list;
+
+    system_config()
+    : local_mode_(false)
+    {
+        std::string path = exe_path();
+
+        if (path.find(%{ ${PRJ_DEFPREFIX} }%BINDIR) != std::string::npos) {
+            // Program is in system 'bin' directory
+            local_mode_ = false;
+            etc_dir_ = %{ ${PRJ_DEFPREFIX} }%ETCDIR;
+            sys_etc_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSETCDIR;
+            sys_lib_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSLIBDIR;
+            bin_dir_ = %{ ${PRJ_DEFPREFIX} }%BINDIR;
+            lib_dir_ = %{ ${PRJ_DEFPREFIX} }%LIBDIR;
+            share_dir_ = %{ ${PRJ_DEFPREFIX} }%SHAREDIR;
+            var_lib_dir_ = %{ ${PRJ_DEFPREFIX} }%VARDIR;
+            var_log_dir_ = %{ ${PRJ_DEFPREFIX} }%LOGDIR;
+            var_run_dir_ = %{ ${PRJ_DEFPREFIX} }%RUNDIR;
+            plugins_dir_ = %{ ${PRJ_DEFPREFIX} }%PLUGDIR;
+            test_etc_dir_ = "/you/should/not/use/this/when/installed";
+            test_data_dir_ = "/you/should/not/use/this/when/installed";
+        } else {
+            // Program is in a local build directory
+            local_mode_ = true;
+            std::string build_dir = "%{ $PRJ_BUILDDIR }%";
+            std::string root_dir = "%{ $TOPDIR }%";
+            etc_dir_ = root_dir + "/" + "etc";
+            test_etc_dir_ = root_dir + "/" + "test-etc";
+            test_data_dir_ = root_dir + "/" + "test-data";
+            sys_etc_dir_ = root_dir + "/" + "etc";
+            sys_lib_dir_ = root_dir + "/" + "lib";
+            bin_dir_ = build_dir + "/" + "bin";
+            lib_dir_ = build_dir + "/" + "lib";
+            share_dir_ = root_dir + "/" + "share";
+            var_lib_dir_ = build_dir + "/" + "var/lib";
+            var_log_dir_ = build_dir + "/" + "var/log";
+            var_run_dir_ = build_dir + "/" + "var/run";
+            plugins_dir_ = lib_dir_ + "/" + "plugins";
+        }
+
+        directory_map_["etc"] = etc_dir_;
+        directory_map_["test_etc"] = test_etc_dir_;
+        directory_map_["test_data"] = test_data_dir_;
+        directory_map_["sys_etc"] = sys_etc_dir_;
+        directory_map_["sys_lib"] = sys_lib_dir_;
+        directory_map_["bin"] = bin_dir_;
+        directory_map_["lib"] = lib_dir_;
+        directory_map_["share"] = share_dir_;
+        directory_map_["var_lib"] = var_lib_dir_;
+        directory_map_["var_log"] = var_log_dir_;
+        directory_map_["var_run"] = var_run_dir_;
+        directory_map_["plugins"] = plugins_dir_;
+    }
+
+    plugin_list find_plugins()
+    { return find_plugins(plugins_dir_); }
+
+    const std::string& get_dir(const std::string& which) const {
+        directory_map::const_iterator it;
+
+        if ((it = directory_map_.find(which)) != directory_map_.end()) {
+            return it->second;
+        }
+
+        throw std::runtime_error("no such directory configured for: " + which);
+    }
+
+    const std::string& etc_dir(void) const
+    {
+        if (std::getenv("CB_TEST") != nullptr) {
+            return test_etc_dir_;
+        }
+
+        return etc_dir_;
+    }
+
+    const std::string& test_etc_dir(void) const
+    { return test_etc_dir_; }
+
+    const std::string& test_data_dir(void) const
+    { return test_data_dir_; }
+
+    const std::string& sys_etc_dir(void) const
+    { return sys_etc_dir_; }
+
+    const std::string& sys_lib_dir(void) const
+    { return sys_lib_dir_; }
+
+    const std::string& bin_dir(void) const
+    { return bin_dir_; }
+
+    const std::string& lib_dir(void) const
+    { return lib_dir_; }
+
+    const std::string& share_dir(void) const
+    { return share_dir_; }
+
+    const std::string& var_lib_dir(void) const
+    { return var_lib_dir_; }
+
+    const std::string& var_log_dir(void) const
+    { return var_log_dir_; }
+
+    const std::string& var_run_dir(void) const
+    { return var_run_dir_; }
+
+    const std::string& plugins_dir(void) const
+    { return plugins_dir_; }
+
+private:
+    typedef std::map<std::string, std::string> directory_map;
+
+    std::string exe_path(void) {
+        char buf[PATH_MAX];
+
+        ::memset(buf, 0, sizeof(buf));
+
+#if defined(LINUX)
+        ssize_t r = readlink("/proc/self/exe", buf, sizeof(buf));
+#elif defined(DARWIN)
+        char tbuf[PATH_MAX];
+        uint32_t bufsize = sizeof(tbuf);
+        int r = _NSGetExecutablePath(tbuf, &bufsize);
+        realpath(tbuf, buf);
+#elif defined(FREEBSD)
+        // TODO: readlink("/proc/curproc/file", buf, bufsize);
+#elif defined(SOLARIS)
+        // TODO: readlink("/proc/self/path/a.out", buf, bufsize);
+#endif
+
+        if (r < 0) {
+            throw std::runtime_error("failed to find program path");
+        }
+
+        std::string path = buf;
+
+        return path;
+    }
+
+    plugin_list find_plugins(const std::string& dir) {
+        plugin_list plugins;
+
+        DIR* dirh;
+
+        if ((dirh = opendir(dir.c_str())) != NULL) {
+            struct dirent* entry;
+
+            while ((entry = readdir(dirh)) != NULL) {
+                std::string plugin_path = dir;
+                plugin_path += "/";
+                plugin_path += entry->d_name;
+                std::string::size_type pos;
+
+                if (
+                    (pos = plugin_path.rfind(".so"))
+                    ==
+                    (plugin_path.size() - 3)
+                ) {
+                    plugins.push_back(plugin_path);
+                }
+            }
+
+            closedir(dirh);
+        }
+
+        return plugins;
+    }
+
+    bool local_mode_;
+    std::string etc_dir_;
+    std::string test_etc_dir_;
+    std::string test_data_dir_;
+    std::string sys_etc_dir_;
+    std::string sys_lib_dir_;
+    std::string bin_dir_;
+    std::string lib_dir_;
+    std::string share_dir_;
+    std::string var_lib_dir_;
+    std::string var_log_dir_;
+    std::string var_run_dir_;
+    std::string plugins_dir_;
+    directory_map directory_map_;
+};
+
+} // namespace %{ ${PRJ_NAME} }%
+
+#endif // __%{ ${PNAME} }%_SYSTEM_CONFIG_H__

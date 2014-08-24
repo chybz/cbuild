@@ -1,0 +1,53 @@
+% if ((${#TARGET_INC[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_INC[@]})
+include_directories(
+    %{ $LIST }%
+)
+
+% fi
+% if ((${#TARGET_LINK[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_LINK[@]})
+link_directories(
+    %{ $LIST }%
+)
+
+% fi
+%
+% LIST=$(cp_ajoin "\n    " ${SOURCES[@]} ${HEADERS[@]})
+add_executable(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+
+set_target_properties(
+    %{ $TARGET_BUILD_NAME }%
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY %{ $PRJ_BINDIR }%
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG %{ $PRJ_BINDIR }%
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE %{ $PRJ_BINDIR }%
+    OUTPUT_NAME %{ $TARGET }%
+)
+% if ((${#TARGET_LIBS[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_LIBS[@]})
+
+target_link_libraries(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+% if [[ ${PRJ_OPTS["electric-fence"]} -eq 1 ]]; then
+    efence
+% fi
+)
+% fi
+% if ((${#TARGET_DEPS[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_DEPS[@]})
+
+add_dependencies(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+% fi
+
+install(
+    TARGETS %{ $TARGET_BUILD_NAME }%
+    RUNTIME DESTINATION bin
+)

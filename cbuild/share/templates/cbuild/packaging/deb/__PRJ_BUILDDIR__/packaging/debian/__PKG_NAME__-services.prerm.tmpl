@@ -1,0 +1,19 @@
+%{Bash}%
+OPTS["chmod"]="0755"
+OPTS["process"]=$((${PRJ_HAS["SVC"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    remove|upgrade|deconfigure)
+%     for SERVICE in ${PRJ_SVCS[@]}; do
+        service %{ ${SERVICE} }% stop
+%     done
+    ;;
+esac
+
+#DEBHELPER#
+% fi

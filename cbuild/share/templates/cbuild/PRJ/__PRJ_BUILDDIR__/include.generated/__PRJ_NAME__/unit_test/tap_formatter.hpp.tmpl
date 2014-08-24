@@ -1,0 +1,154 @@
+% PNAME=${PRJ_NAME^^}
+% PNAME=${PNAME//-/_}
+#ifndef __%{ ${PNAME} }%_UNIT_TEST_TAP_FORMATTER_H__
+#define __%{ ${PNAME} }%_UNIT_TEST_TAP_FORMATTER_H__
+
+#include <boost/test/unit_test_log_formatter.hpp>
+
+namespace cbuild {
+namespace %{ ${PRJ_NAME} }% {
+namespace unit_test {
+
+namespace but = boost::unit_test;
+namespace buto = boost::unit_test::output;
+
+class tap_formatter : public but::unit_test_log_formatter {
+public:
+    tap_formatter()
+    : current_test_(0),
+    current_test_ok_(true),
+    skip_log_entry_(false)
+    {}
+
+    // Formatter interface
+    void log_start(std::ostream& ost, but::counter_t test_cases_amount)
+    {
+        ost << "1.." << test_cases_amount << std::endl;
+    }
+    void log_finish(std::ostream& ost)
+    {
+        ost.flush();
+    }
+
+    void log_build_info(std::ostream& ost)
+    {}
+
+    void test_unit_start(std::ostream& ost, but::test_unit const& tu)
+    {
+        if (tu.p_type == but::tut_case) {
+            ++current_test_;
+            current_test_ok_ = true;
+        }
+    }
+
+    void test_unit_finish(std::ostream& ost, but::test_unit const& tu, unsigned long elapsed)
+    {
+        if (tu.p_type == but::tut_case) {
+            ost
+                << (
+                    current_test_ok_
+                    ? "ok"
+                    : "not ok"
+                )
+                << " " << current_test_
+                << " - " << tu.p_name
+                << std::endl
+                ;
+        }
+    }
+
+    void test_unit_skipped(std::ostream& ost, but::test_unit const& tu)
+    {
+        ost << "ok " << current_test_ << " # SKIP\n";
+    }
+
+    void log_exception(std::ostream& ost, but::log_checkpoint_data const& checkpoint_data, boost::execution_exception const& ex)
+    {
+        boost::execution_exception::location const& loc = ex.where();
+
+        current_test_ok_ = false;
+
+        ost
+            << "# "
+            << (
+                loc.m_function.is_empty()
+                ? buto::test_phase_identifier()
+                : loc.m_function
+            )
+            ;
+
+        if (!checkpoint_data.m_file_name.is_empty()) {
+            std::string file(
+                checkpoint_data.m_file_name.begin(),
+                checkpoint_data.m_file_name.end()
+            );
+            std::string::size_type n = file.rfind("tests/");
+
+            if (n == std::string::npos) {
+                n = 0;
+            }
+
+            ost
+                << " (after "
+                << file.substr(n) << ':' << checkpoint_data.m_line_num
+                << ")"
+                ;
+        }
+
+        ost << ": " << ex.what() << std::endl;
+    }
+
+    void log_entry_start(std::ostream& ost, but::log_entry_data const& entry_data, log_entry_types let)
+    {
+        switch (let) {
+            case BOOST_UTL_ET_INFO:
+            case BOOST_UTL_ET_MESSAGE:
+            skip_log_entry_ = true;
+            break;
+
+            case BOOST_UTL_ET_WARNING:
+            skip_log_entry_ = false;
+            ost << "# W: " << buto::test_phase_identifier() << ": ";
+            break;
+
+            case BOOST_UTL_ET_ERROR:
+            case BOOST_UTL_ET_FATAL_ERROR:
+            current_test_ok_ = false;
+            skip_log_entry_ = false;
+            ost << "# E: " << buto::test_phase_identifier() << ": ";
+            break;
+        }
+    }
+
+    void log_entry_value(std::ostream& ost, but::const_string value)
+    {
+        if (!skip_log_entry_) {
+            ost << value;
+        }
+    }
+
+    void log_entry_value(std::ostream& ost, but::lazy_ostream const& value)
+    {
+        if (!skip_log_entry_) {
+            ost << value;
+        }
+    }
+
+    void log_entry_finish(std::ostream& ost)
+    {
+        if (!skip_log_entry_) {
+            ost << std::endl;
+        }
+    }
+
+private:
+    unsigned int current_test_;
+    bool current_test_ok_;
+    bool skip_log_entry_;
+};
+
+} // namespace unit_test
+} // namespace %{ ${PRJ_NAME} }%
+} // namespace cbuild
+
+#endif // __%{ ${PNAME} }%_UNIT_TEST_TAP_FORMATTER_H__

@@ -1,0 +1,8 @@
+usr/bin/%{ ${PKG_NAME} }%-config
+usr/share/man/man1/%{ ${PKG_NAME} }%-config.1
+% if [[ ${PKG_HAS["ETCDIR"]} ]]; then
+etc/%{ ${PKG_NAME} }%
+% fi
+% if [[ ${PKG_HAS["SHAREDIR"]} ]]; then
+usr/share/%{ ${PKG_NAME} }%
+% fi

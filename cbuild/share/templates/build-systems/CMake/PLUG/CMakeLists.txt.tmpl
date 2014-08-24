@@ -1,0 +1,57 @@
+% if ((${#TARGET_INC[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_INC[@]})
+include_directories(
+    %{ $LIST }%
+)
+
+% fi
+% if ((${#TARGET_LINK[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_LINK[@]})
+link_directories(
+    %{ $LIST }%
+)
+
+% fi
+%
+% SLIST=$(cp_ajoin "\n    " ${SOURCES[@]})
+add_library(
+    %{ $TARGET_BUILD_NAME }%
+    MODULE
+    %{ $SLIST }%
+)
+
+set_target_properties(
+    %{ $TARGET_BUILD_NAME }%
+    PROPERTIES
+% if ((${#CB_LIB_LFLAGS[*]})); then
+    LINK_FLAGS "%{ ${CB_LIB_LFLAGS[@]} }%"
+% fi
+    RUNTIME_OUTPUT_DIRECTORY %{ $PRJ_BINDIR }%
+    LIBRARY_OUTPUT_DIRECTORY %{ $PRJ_PLUGDIR }%
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG %{ $PRJ_BINDIR }%
+    LIBRARY_OUTPUT_DIRECTOR_DEBUG %{ $PRJ_PLUGDIR }%
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE %{ $PRJ_BINDIR }%
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE %{ $PRJ_PLUGDIR }%
+    OUTPUT_NAME %{ $TARGET }%
+)
+% if ((${#TARGET_LIBS[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_LIBS[@]})
+
+target_link_libraries(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+% fi
+% if ((${#TARGET_DEPS[*]})); then
+%     LIST=$(cp_ajoin "\n    " ${TARGET_DEPS[@]})
+
+add_dependencies(
+    %{ $TARGET_BUILD_NAME }%
+    %{ $LIST }%
+)
+% fi
+
+install(
+    TARGETS %{ $TARGET_BUILD_NAME }%
+    LIBRARY DESTINATION lib/%{ $PKG_NAME }%/plugins
+)

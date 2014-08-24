@@ -1,0 +1,96 @@
+%{Bash}%
+
+declare -a LIB_DIRS=(
+    "$PKG_SYSLIBDIR"
+)
+
+function lib_exists() {
+    local LIB=$1
+
+    local LIBDIR
+
+    for LIBDIR in ${LIB_DIRS[@]}; do
+        if [ -f $LIBDIR/$LIB ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+function lib_name() {
+    local LIB=$1
+
+    LIB=${LIB##$PKG_SYSLIBDIR/libboost_}
+    LIB=${LIB%%\.dylib*}
+    LIB=${LIB%%-mt}
+
+    echo $LIB
+}
+
+function pc_name() {
+    echo libboost_$(lib_name $1)
+}
+
+function link_name() {
+    local LIB=$(lib_name $1)
+
+    if lib_exists libboost_${LIB}-mt.so; then
+        echo boost_${LIB}-mt
+    else
+        echo boost_${LIB}
+    fi
+}
+
+function lib_deps() {
+    local LIB=$1
+    local LIBNAME=$(lib_name $LIB)
+
+    local DEPS=$(
+        otool -L $LIB | \
+        grep -v libboost_$LIBNAME | grep boost | \
+        sed -e "s/^[[:space:]]*//" | \
+        cut -d ' ' -f 1 | \
+        xargs
+    )
+
+    local DEP
+    local -a PCDEPS
+
+    for DEP in $DEPS; do
+        PCDEPS+=($(pc_name $DEP))
+    done
+
+    echo ${PCDEPS[@]}
+}
+
+if [[ ! $BOOST_LIB ]]; then
+    NEEDED=0
+
+    for PKG in ${!PRJ_PKGS[@]}; do
+        if [[ $PKG =~ boost ]]; then
+            NEEDED=1
+            break
+        fi
+    done
+
+    if [[ ! $NEEDED ]]; then
+        OPTS["process"]=0
+    else
+        BOOST_LIBS=()
+        for LIB in $PKG_SYSLIBDIR/libboost*.dylib; do
+            BOOST_LIBS+=($LIB)
+        done
+        OPTS["recall-foreach"]="BOOST_LIB ${BOOST_LIBS[@]}"
+        OPTS["label"]="generating Boost pkg-config support files"
+    fi
+else
+    LIB=$(lib_name $BOOST_LIB)
+    OPTS["rename-to"]=$(pc_name $BOOST_LIB).pc
+%{/Bash}%
+Name: %{ $LIB }%
+Description: Boost %{ $LIB }% library
+Version: 1
+Requires: %{ $(lib_deps $BOOST_LIB) }%
+Libs: %{ -l$(link_name $BOOST_LIB) }%
+% fi

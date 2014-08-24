@@ -1,0 +1,8 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["LIB"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+lib%{ ${PKG_NAME} }%: package-name-doesnt-match-sonames
+lib%{ ${PKG_NAME} }%: hardening-no-fortify-functions
+lib%{ ${PKG_NAME} }%: embedded-library
+% fi

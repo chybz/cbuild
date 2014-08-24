@@ -1,0 +1,118 @@
+MAKEFLAGS=--no-print-directory
+PROJECT_NAME=%{ $PRJ_NAME }%
+PROJECT_VERSION=%{ $PRJ_VER }%
+PACKAGE_NAME=%{ $PKG_NAME }%
+GCOV=%{ $CB_GCOV }%
+BASEDIR=$(shell pwd)
+% if (($CB_CPUS > 1)); then
+CB_JOBS=-j%{ $CB_CPUS }%
+% else
+CB_JOBS=
+% fi
+
+all: build-project
+
+build-project:
+	@$(MAKE) $(CB_JOBS) -C build
+
+% declare -a BIN_TARGETS
+%
+% for TARGET in ${PRJ_BINS[@]}; do
+%     TARGET=bin_${TARGET}
+%     BIN_TARGETS+=($TARGET)
+%{ $TARGET }%:
+	@$(MAKE) $(CB_JOBS) -C build %{ $TARGET }%
+
+% done
+
+binaries: %{ ${BIN_TARGETS[@]} }%
+
+% declare -a LIB_TARGETS
+%
+% for TARGET in ${PRJ_LIBS[@]}; do
+%     if [[ "${HLIB_MAP[$TARGET]}" ]]; then
+%         continue
+%     fi
+%
+%     TARGET=lib_${TARGET}
+%     LIB_TARGETS+=($TARGET)
+%{ $TARGET }%:
+	@$(MAKE) $(CB_JOBS) -C build %{ $TARGET }%
+
+% done
+
+libraries: %{ ${LIB_TARGETS[@]} }%
+
+% declare -a PLUG_TARGETS
+%
+% for TARGET in ${PRJ_PLUGS[@]}; do
+%     TARGET=plug_${TARGET}
+%     PLUG_TARGETS+=($TARGET)
+%{ $TARGET }%:
+	@$(MAKE) $(CB_JOBS) -C build %{ $TARGET }%
+
+% done
+
+plugins: %{ ${PLUG_TARGETS[@]} }%
+
+% declare -a TST_TARGETS
+%
+% for TARGET in ${PRJ_TSTS[@]}; do
+%     TARGET=tst_${TARGET}
+%     TST_TARGETS+=($TARGET)
+%{ $TARGET }%:
+	@$(MAKE) $(CB_JOBS) -C build %{ $TARGET }%
+
+% done
+
+tests: %{ ${TST_TARGETS[@]} }%
+
+test:
+	@cd build && prove -m -e '' t
+
+test-verbose:
+	@cd build && prove -v -m -e '' t
+
+test-report:
+	@mkdir -p build/quality-reports/tests
+	@cd build && prove \
+	    -v -m -e '' \
+	    -P HTML=outfile:quality-reports/tests/index.html,force_inline_css:1,force_inline_js:1 \
+	    t || true
+
+coverage-report:
+	@rm -rf build/coverage
+	@mkdir -p build/coverage
+	@echo "building coverage data"
+
+	@cd build && ( \
+		gcovr \
+			-e '/usr/include.*' \
+			--html --html-details \
+			-o coverage/index.html \
+	    ; \
+	    sed -i"" -r -e 's,>[^<]+/sources/,>,g' coverage/*.html \
+	)
+
+
+doc:
+	@cd build/doc && doxygen 2> doxygen.log
+
+package:
+	@cd build && ( \
+		make DESTDIR=packaging install; \
+		dpkg-buildpackage -b -uc \
+	)
+
+install:
+	@sudo dpkg -i DEBS/*.deb
+
+upload:
+	@cd DEBS && erepo-upload
+
+clean:
+	@rm -rf build
+	@rm -f DEBS/$(PACKAGE_NAME)*
+
+distclean: clean
+	@rm -rf .cbuild

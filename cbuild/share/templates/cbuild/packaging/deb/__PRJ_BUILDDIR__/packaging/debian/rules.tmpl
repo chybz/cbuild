@@ -1,0 +1,31 @@
+%{Bash}%
+OPTS["chmod"]="0755"
+OPTS["process"]=$((${PRJ_HAS["LIB"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+#!/usr/bin/make -f
+
+%{ % }%:
+	dh $@
+
+% if ((${PRJ_HAS["SVC"]})); then
+override_dh_installinit:
+%     for SVC in ${PRJ_SVCS[@]}; do
+	dh_installinit -p%{ ${PKG_NAME} }%-services --no-start --name=%{ ${SVC} }%
+%     done
+% fi
+
+override_dh_strip:
+% if ((${PRJ_HAS["BIN"]})); then
+	dh_strip -p%{ ${PKG_NAME} }% --dbg-package=%{ ${PKG_NAME} }%-dbg
+% fi
+% if ((${PRJ_HAS["SVC"]})); then
+	dh_strip -p%{ ${PKG_NAME} }%-services --dbg-package=%{ ${PKG_NAME} }%-services-dbg
+% fi
+% if ((${PRJ_HAS["BIN_LIB"]})); then
+	dh_strip -plib%{ ${PKG_NAME} }% --dbg-package=lib%{ ${PKG_NAME} }%-dbg
+% fi
+% if ((${PRJ_HAS["PLUG"]})); then
+	dh_strip -p%{ ${PKG_NAME} }%-plugins --dbg-package=%{ ${PKG_NAME} }%-plugins-dbg
+% fi
+% fi

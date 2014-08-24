@@ -1,0 +1,49 @@
+%{Bash}%
+OPTS["chmod"]="0755"
+OPTS["process"]=$((${PRJ_HAS["BIN"]} || ${PRJ_HAS["SVC"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+#!/bin/bash
+
+PKG_USER=%{ ${PRJ_USER} }%
+PKG_GROUP=%{ ${PRJ_GROUP} }%
+
+set -e
+
+function make_dir() {
+    local DIR=$1
+
+    mkdir -p $DIR
+    chown $PKG_USER:$PKG_GROUP $DIR
+
+    if [ "$PKG_USER" != "$PKG_GROUP" ]; then
+        chmod g+ws $DIR
+    fi
+}
+
+if [ "$1" = "configure" ]; then
+%     if [ $PRJ_USER != "root" ]; then
+    if [ -z "$2" ]; then
+        # Install
+        echo "creating $PKG_USER system user"
+        adduser \
+            --quiet \
+            --system \
+            --group \
+            --home <% $ARGS{var_lib_dir} %> \
+            --no-create-home \
+            --shell /bin/bash \
+            $PKG_USER
+
+        usermod -a -G expand %{ ${PKG_VARDIR} }%
+    fi
+
+%     fi
+    # Create system directories and fix permissions
+    make_dir %{ ${PKG_VARDIR} }%
+    make_dir %{ ${PKG_LOGDIR} }%
+    make_dir %{ ${PKG_RUNDIR} }%
+fi
+
+#DEBHELPER#
+% fi

@@ -1,0 +1,13 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["LIB"]}))
+if ((${OPTS["process"]})); then
+%{/Bash}%
+%     if ((${PRJ_HAS["BIN_LIB"]})); then
+usr/lib/lib*.so
+%     fi
+%
+%     for LIB in ${PRJ_LIBS[@]}; do
+usr/lib/pkgconfig/lib%{ ${LIB} }%.pc
+%     done
+usr/include/%{ ${PKG_NAME} }%
+% fi

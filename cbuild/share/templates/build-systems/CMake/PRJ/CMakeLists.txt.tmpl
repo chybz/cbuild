@@ -1,0 +1,93 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(%{ $PRJ_NAME }%)
+
+set(CMAKE_RULE_MESSAGES OFF)
+set(CMAKE_COLOR_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+
+set(CMAKE_EXE_LINKER_FLAGS "%{ ${CB_LFLAGS[@]} }% %{ ${CB_BIN_LFLAGS[@]} }%")
+set(CMAKE_SHARED_LINKER_FLAGS "%{ ${CB_LFLAGS[@]} }% %{ ${CB_LIB_LFLAGS[@]} }%")
+set(CMAKE_MODULE_LINKER_FLAGS "%{ ${CB_LFLAGS[@]} }%")
+set(CMAKE_CXX_FLAGS "%{ ${CB_GEN_FLAGS[@]} }% %{ ${CB_CXXFLAGS[@]} }%")
+set(CMAKE_C_FLAGS "%{ ${CB_GEN_FLAGS[@]} }% %{ ${CB_CFLAGS[@]} }%")
+
+add_definitions(
+    -D%{ ${PRJ_NAME^^} }%_EXPORTS
+    -D%{ ${CPKG_PF^^} }%
+    -D%{ ${CPKG_OS^^} }%
+% if [[ ${PRJ_OPTS[stack_protector]} ]]; then
+    -D_FORTIFY_SOURCE=2
+% fi
+)
+
+include_directories(%{ "$PRJ_GENINCDIR" }%)
+
+install(
+    DIRECTORY %{ "$PRJ_GENINCDIR/" }%
+    DESTINATION include/%{ $PRJ_NAME }%
+    PATTERN ".svn" EXCLUDE
+)
+% if ((${#HEADER_DIRS} > 0)); then
+%     for INCDIR in ${HEADER_DIRS[@]}; do
+
+install(
+    DIRECTORY %{ "$INCDIR/" }%
+    DESTINATION include/%{ $PRJ_NAME }%
+    PATTERN ".svn" EXCLUDE
+)
+%     done
+% fi
+% if [ -d "$PRJ_PRIVINCDIR" ]; then
+
+include_directories(%{ "$PRJ_PRIVINCDIR" }%)
+% fi
+% if [ -d "$PRJ_INCDIR" ]; then
+
+include_directories(%{ "$PRJ_INCDIR" }%)
+
+install(
+    DIRECTORY %{ "$PRJ_INCDIR/" }%
+    DESTINATION include/%{ $PRJ_NAME }%
+    PATTERN ".svn" EXCLUDE
+)
+% fi
+% if ((${#PRJ_LIBS} > 0)); then
+
+install(
+    DIRECTORY %{ "$PRJ_BUILDDIR/pkgconfig/" }%
+    DESTINATION lib/pkgconfig
+    PATTERN ".svn" EXCLUDE
+)
+% fi
+
+install(
+    DIRECTORY etc/
+    DESTINATION /etc/%{ $PRJ_NAME }%
+    OPTIONAL
+    PATTERN ".svn" EXCLUDE
+)
+
+install(
+    DIRECTORY share/
+    DESTINATION share/%{ $PRJ_NAME }%
+    OPTIONAL
+    PATTERN ".svn" EXCLUDE
+)
+
+% for T in ${PRJ_LIBS[@]}; do
+%     if [[ "${HLIB_MAP[$T]}" ]]; then
+%         continue
+%     fi
+%
+add_subdirectory(libraries/%{ $T }%)
+% done
+% for T in ${PRJ_PLUGS[@]}; do
+add_subdirectory(plugins/%{ $T }%)
+% done
+% for T in ${PRJ_BINS[@]}; do
+add_subdirectory(binaries/%{ $T }%)
+% done
+% for T in ${PRJ_TSTS[@]}; do
+add_subdirectory(tests/%{ $T }%)
+% done

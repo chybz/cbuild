@@ -1,0 +1,33 @@
+%{Bash}%
+OPTS["chmod"]="0755"
+OPTS["process"]=$((${PRJ_HAS["BIN"]} || ${PRJ_HAS["SVC"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+#!/bin/bash
+
+PKG_USER=%{ ${PRJ_USER} }%
+PKG_GROUP=%{ ${PRJ_GROUP} }%
+
+set -e
+
+function remove_dir() {
+    local DIR=$1
+
+    if [ -d $DIR ]; then
+        rm -rf $DIR
+    fi
+}
+
+if [ "$1" = "purge" ]; then
+%     if [ $PRJ_USER != "root" ]; then
+    echo "removing $PKG_USER system user"
+    deluser --quiet --system $PKG_USER
+%     fi
+    # Remove system directories
+    remove_dir %{ ${PKG_VARDIR} }%
+    remove_dir %{ ${PKG_LOGDIR} }%
+    remove_dir %{ ${PKG_RUNDIR} }%
+fi
+
+#DEBHELPER#
+% fi

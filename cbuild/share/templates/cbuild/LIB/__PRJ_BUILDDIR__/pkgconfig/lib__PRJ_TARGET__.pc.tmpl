@@ -1,0 +1,14 @@
+% NAME="lib$TARGET"
+prefix=%{ $CPKG_PREFIX }%
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: %{ $NAME }%
+Description: %{ $PRJ_NAME }% %{ $NAME }% library
+Version: %{ $PRJ_VER }%
+% if ((${#SOURCES} > 0)); then
+%     LNK="-L\${libdir} -l${TARGET}"
+% fi
+Libs: %{ $LNK }%
+Cflags: -I${includedir}/%{ $PRJ_NAME }%

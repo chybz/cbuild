@@ -1,0 +1,22 @@
+%{Bash}%
+OPTS["chmod"]="0755"
+OPTS["process"]=$((${PRJ_HAS["SVC"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+#!/bin/bash
+
+set -e
+
+if [ "$1" = "purge" ]; then
+%     for SERVICE in ${PRJ_SVCS[@]}; do
+    echo "removing %{ ${SERVICE} }% system service"
+    svsetup REMOVE %{ ${SERVICE} }%
+
+    if [ -d /etc/sv/%{ ${SERVICE} }% ]; then
+        rm -rf /etc/sv/%{ ${SERVICE} }%
+    fi
+%     done
+fi
+
+#DEBHELPER#
+% fi
