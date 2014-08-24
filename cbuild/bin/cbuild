@@ -7,11 +7,10 @@
 ##############################################################################
 ME=`basename $0`
 
-##CPKG_DIRS##
-
 CBUILD_CONF=cbuild.conf
 
-# BOOTSTRAP BEGIN
+##CPKG_DIRS##
+# CPKG BOOTSTRAP BEGIN
 if [ -z "$LIBDIR" ]; then
     MYDIR=`dirname $0`
     MYDIR=`cd $MYDIR/.. && pwd`
@@ -22,7 +21,7 @@ if [ -z "$LIBDIR" ]; then
     VARDIR=$MYDIR/var
     LOGDIR=$MYDIR/log
 fi
-# BOOTSTRAP END
+# CPKG BOOTSTRAP END
 
 . $LIBDIR/libcbuild.sh
 
