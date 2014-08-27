@@ -605,8 +605,8 @@ function cb_find_std_headers() {
         done
     done
 
-    if [[ $CPKG_TYPE == "pkgsrc" ]]; then
-        for INC in $(cp_find_rel "$CPKG_PREFIX/include"); do
+    if [[ $CPKG_TYPE == "pkgsrc" && -d "/usr/include" ]]; then
+        for INC in $(cp_find_rel "/usr/include"); do
             if [ -f $CPKG_PREFIX/include/$INC ]; then
                 # Prefer include from pkgsrc
                 continue
@@ -936,7 +936,7 @@ function cb_scan_target_files() {
         for DEPLINE in "$DEPLINES"; do
             read -a FDEPS <<<$DEPLINE
 
-            if ((${#FDEPS[@]})); then
+            if ((!${#FDEPS[@]})); then
                 # No dependencies
                 continue
             fi
@@ -1035,7 +1035,7 @@ function cb_scan_target_files() {
                         HINT=${FDEP%%\.*}
                     fi
 
-                    local -a MATCHES=($(find_c_lib $HINT))
+                    local -a MATCHES=($(lp_find_c_lib $HINT))
 
                     if ((${#MATCHES} > 0)); then
                         local LABEL="Target $TYPE $TARGET depends"
@@ -1106,7 +1106,7 @@ function cb_get_pc_list() {
     local TARGET_KEY="${TYPE}_${TARGET}"
 
     for DEP in ${TARGET_PCDEP_MAP[$TARGET_KEY]}; do
-        ITEMS="$(get_pkgconfig $DEP "$PCFLAG")"
+        ITEMS="$(lp_get_pkgconfig $DEP "$PCFLAG")"
         ITEMS=${ITEMS//$STRIP}
         ITEMS=${ITEMS## }
         ITEMS=${ITEMS%% }
