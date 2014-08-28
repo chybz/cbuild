@@ -153,23 +153,23 @@ export CB_CC_IS_CLANG=0
 # Default compiler commands
 declare -A CB_CPPS=(
     [Linux]=cpp
-    [MacOSX]=cpp
+    [Darwin]=cpp
 )
 declare -A CB_CCS=(
     [Linux]=gcc
-    [MacOSX]=clang
+    [Darwin]=clang
 )
 declare -A CB_CC_VERSIONS=(
     [Linux]=4.8
-    [MacOSX]=
+    [Darwin]=
 )
 declare -A CB_CXXS=(
     [Linux]=g++
-    [MacOSX]=clang++
+    [Darwin]=clang++
 )
 declare -A CB_GCOVS=(
     [Linux]=gcov
-    [MacOSX]=gcov
+    [Darwin]=gcov
 )
 
 CB_EMPTY_DIR=$CB_STATE_DIR/empty-dir
@@ -247,7 +247,7 @@ function cb_find_cpus() {
         CPUS=$(grep "^cpu cores" /proc/cpuinfo | head -n 1 | cut -d : -f 2)
         CPUS=${CPUS## }
         CPUS=${CPUS%% }
-    elif [[ $CPKG_OS == "MacOSX" ]]; then
+    elif [[ $CPKG_OS == "Darwin" ]]; then
         CPUS=$(/usr/sbin/sysctl machdep.cpu.core_count | cut -d : -f 2)
         CPUS=${CPUS## }
         CPUS=${CPUS%% }
