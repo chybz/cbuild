@@ -1043,7 +1043,7 @@ function cb_scan_target_files() {
                         LABEL+=", but it was not found on this system.\n\n"
                         LABEL+="The following package(s) may provide it:"
 
-                        choose "$LABEL" "Install a package" ${MATCHES[@]}
+                        cp_choose "$LABEL" "Install a package" ${MATCHES[@]}
 
                         if [ -n "$CPKG_CHOICE" ]; then
                             lp_install_packages $CPKG_CHOICE
