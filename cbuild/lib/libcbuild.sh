@@ -7,7 +7,7 @@ if [ "${BASH_VERSINFO[0]}" -ne 4 ]; then
 fi
 
 # Check cpkg-config is available
-if ! which -s cpkg-config; then
+if ! which cpkg-config >/dev/null; then
     echo "cpkg-config not found, please install cpkg"
     exit 1
 fi
@@ -1377,8 +1377,8 @@ function cb_configure_targets() {
             cp_process_templates \
                 $SHAREDIR/templates/cbuild/packaging/$CPKG_TYPE
 
-            cp_process_packaging_files \
-                $PRJ_BUILDDIR/packaging $PRJ_VER $PRJ_REV
+            # lp_process_package_files \
+            #     $PRJ_BUILDDIR/packaging $PRJ_VER $PRJ_REV
         fi
     fi
 
