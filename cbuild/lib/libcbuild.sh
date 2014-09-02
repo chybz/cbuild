@@ -1257,7 +1257,7 @@ function cb_sort_targets() {
         HIST+=("${TARGET_DEP_HIST[$HKEY]},$HKEY")
     done
 
-    local HISTLINES="$(cp_ajoin "\n" ${HIST[@]})"
+    local HISTLINES="$(cp_join "\n" ${HIST[@]})"
     local -a ORDERED=($(echo "$HISTLINES" | sort -t , -r | xargs))
     ORDERED=(${ORDERED[@]//[[:digit:]]*,})
 
