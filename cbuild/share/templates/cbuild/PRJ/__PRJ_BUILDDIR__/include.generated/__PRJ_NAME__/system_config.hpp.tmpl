@@ -49,6 +49,7 @@ public:
             plugins_dir_ = %{ ${PRJ_DEFPREFIX} }%PLUGDIR;
             test_etc_dir_ = "/you/should/not/use/this/when/installed";
             test_data_dir_ = "/you/should/not/use/this/when/installed";
+            test_tmp_dir_ = "/you/should/not/use/this/when/installed";
         } else {
             // Program is in a local build directory
             local_mode_ = true;
@@ -57,6 +58,7 @@ public:
             etc_dir_ = root_dir + "/" + "etc";
             test_etc_dir_ = root_dir + "/" + "test-etc";
             test_data_dir_ = root_dir + "/" + "test-data";
+            test_tmp_dir_ = root_dir + "/" + "tmp";
             sys_etc_dir_ = root_dir + "/" + "etc";
             sys_lib_dir_ = root_dir + "/" + "lib";
             bin_dir_ = build_dir + "/" + "bin";
@@ -71,6 +73,7 @@ public:
         directory_map_["etc"] = etc_dir_;
         directory_map_["test_etc"] = test_etc_dir_;
         directory_map_["test_data"] = test_data_dir_;
+        directory_map_["test_tmp"] = test_tmp_dir_;
         directory_map_["sys_etc"] = sys_etc_dir_;
         directory_map_["sys_lib"] = sys_lib_dir_;
         directory_map_["bin"] = bin_dir_;
@@ -109,6 +112,9 @@ public:
 
     const std::string& test_data_dir(void) const
     { return test_data_dir_; }
+
+    const std::string& test_tmp_dir(void) const
+    { return test_tmp_dir_; }
 
     const std::string& sys_etc_dir(void) const
     { return sys_etc_dir_; }
@@ -200,6 +206,7 @@ private:
     std::string etc_dir_;
     std::string test_etc_dir_;
     std::string test_data_dir_;
+    std::string test_tmp_dir_;
     std::string sys_etc_dir_;
     std::string sys_lib_dir_;
     std::string bin_dir_;
