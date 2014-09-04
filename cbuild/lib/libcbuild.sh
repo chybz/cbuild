@@ -672,7 +672,7 @@ function cb_configure_compiler_flags() {
         CB_CXXFLAGS+=("-I$CPKG_PREFIX/include")
     fi
 
-    if [[ ${PRJ_OPTS[stack_protector]} -eq 1 ]]; then
+    if ((${PRJ_OPTS[stack_protector]})); then
         CB_GEN_FLAGS+=("-fstack-protector-all")
         (($CPKG_IS_DEB)) && CB_GEN_FLAGS+=(
             "--param=ssp-buffer-size=4"
@@ -680,13 +680,13 @@ function cb_configure_compiler_flags() {
         )
     fi
 
-    if [[ ${PRJ_OPTS[coverage]} -eq 1 ]]; then
+    if ((${PRJ_OPTS[coverage]})); then
         CB_GEN_FLAGS+=("-O0" "--coverage")
         CB_LFLAGS+=("--coverage")
-    elif [[ ${PRJ_OPTS[profiling]} -eq 1 ]]; then
+    elif ((${PRJ_OPTS[profiling]})); then
         CB_GEN_FLAGS+=("-O0" "-pg")
         CB_LFLAGS+=("-pg")
-    elif [[ ${PRJ_OPTS[optimize]} -eq 1 ]]; then
+    elif ((${PRJ_OPTS[optimize]})); then
         CB_GEN_FLAGS+=("-O3")
     else
         CB_GEN_FLAGS+=("-O0")
@@ -696,7 +696,7 @@ function cb_configure_compiler_flags() {
         CB_GEN_FLAGS+=(
             "-march=native"
         )
-        [[ $CB_CC_IS_GCC -eq 1 ]] && CB_GEN_FLAGS+=("-mfpmath=sse")
+        (($CB_CC_IS_GCC)) && CB_GEN_FLAGS+=("-mfpmath=sse")
     elif [[ $CPKG_BIN_ARCH == "i386" ]]; then
         CB_GEN_FLAGS+=(
             "-march=prescott"
