@@ -830,7 +830,7 @@ function cb_install_pkg() {
         LABEL+="We suggest you install the following package:\n\n"
         LABEL+="  $PKG"
 
-        if ask_for_install "$LABEL" $PKG; then
+        if cp_ask_for_install "$LABEL" $PKG; then
             NEED_RESCAN=1
             return 0
         else
