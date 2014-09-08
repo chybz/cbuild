@@ -7,8 +7,6 @@
 ##############################################################################
 ME=`basename $0`
 
-CBUILD_CONF=cbuild.conf
-
 ##CPKG_DIRS##
 # CPKG BOOTSTRAP BEGIN
 if [ -z "$LIBDIR" ]; then
@@ -31,13 +29,6 @@ fi
 #
 ##############################################################################
 
-# Check configuration
-cp_ensure_file_exists $CBUILD_CONF
-. $CBUILD_CONF
-cp_ensure_vars_are_set $PROJECT_VARS
-
-cp_ensure_dir_exists $PRJ_SRCDIR
-
 OPTSPECS[A]="ADDRESS_SANITIZER::enable address sanitizer:0"
 OPTSPECS[S]="NO_STACK_PROTECTOR::disable stack protector:0"
 OPTSPECS[C]="NO_CCACHE::disable ccache:0"
@@ -47,6 +38,10 @@ OPTSPECS[c]="COVERAGE::enable coverage:0"
 OPTSPECS[p]="PROFILING::enable profiling:0"
 
 cp_get_options "$@"
+
+# Check configuration was loaded
+cp_ensure_file_exists $CBUILD_CONF
+cp_ensure_dir_exists $PRJ_SRCDIR
 
 PRJ_OPTS[sanitizer]=$ADDRESS_SANITIZER
 [ $NO_STACK_PROTECTOR -eq 1 ] || PRJ_OPTS[stack_protector]=1

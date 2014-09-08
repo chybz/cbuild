@@ -65,7 +65,8 @@ trap_with_arg handle_trap INT TERM EXIT
 #
 ##############################################################################
 
-TOPDIR=`pwd`
+TOPDIR=$(pwd)
+CBUILD_CONF=cbuild.conf
 
 # Map target type to directory name
 declare -A TYPE_DIRS=(
@@ -91,7 +92,7 @@ declare -A HLIB_TARGET_MAP
 declare -A NOT_FOUND_MAP
 declare -A STD_HEADERS
 declare -a PRJ_HEADER_DIRS
-declare -a PRJ_MANPAGES
+declare -A PRJ_MANPAGES
 declare -A PRJ_OPTS
 declare -a PRJ_CFLAGS
 declare -a PRJ_CXXFLAGS
@@ -130,6 +131,7 @@ PRJ_DEFPREFIX="${PRJ_NAME^^}_"
 PRJ_USER=root
 PRJ_GROUP=$PRJ_USER
 
+[[ -f $CBUILD_CONF ]] && . $CBUILD_CONF
 . $(cpkg-config -L)
 
 PROJECT_VARS="PRJ_NAME PRJ_AUTHOR PKG_NAME PRJ_VER PRJ_REV"
@@ -206,6 +208,12 @@ export CB_CPUS=1
 
 # Load autolink definitions
 declare -A CB_AUTOLINK
+
+function cb_check_conf() {
+    if [[ -f $CBUILD_CONF ]]; then
+        cp_ensure_vars_are_set $PROJECT_VARS
+    fi
+}
 
 function cb_load_autolink() {
     local FILE=$1
@@ -416,7 +424,7 @@ function cb_scan_target() {
     cb_save_target_list $TYPE $NAME "SOURCES"
 
     local NOT_A_SERVICE=1
-    local SOURCE
+    local SOURCE SOURCEFILE
 
     if [ $TYPE = "BIN" ]; then
         if grep \
@@ -429,11 +437,10 @@ function cb_scan_target() {
         fi
 
         for SOURCE in ${SOURCES[@]}; do
-            if grep \
-                -REq \
-                "^=pod\s*$" \
-                $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$NAME/$SOURCE; then
-                PRJ_MANPAGES[$NAME]=$SOURCE
+            SOURCEFILE=$PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$NAME/$SOURCE
+
+            if grep -REq "^=pod\s*$" $SOURCEFILE; then
+                PRJ_MANPAGES[$NAME]=$SOURCEFILE
                 break;
             fi
         done
@@ -1357,10 +1364,9 @@ function cb_configure_targets() {
 
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/SVCS)
 
-    cp_save_list \
+    cp_save_hash \
         "PRJ_MANPAGES" \
-        $CB_STATE_DIR/PRJ/MANPAGES \
-        ${PRJ_MANPAGES[@]}
+        $CB_STATE_DIR/PRJ/MANPAGES
 
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/SVCS)
 
@@ -1372,14 +1378,15 @@ function cb_configure_targets() {
             cp_process_templates \
                 $SHAREDIR/templates/cbuild/pkg-config/$CPKG_TYPE
         fi
+    fi
 
-        if [ -d $SHAREDIR/templates/cbuild/packaging/$CPKG_TYPE ]; then
-            cp_process_templates \
-                $SHAREDIR/templates/cbuild/packaging/$CPKG_TYPE
+    if [ -d $SHAREDIR/templates/cbuild/packaging/$CPKG_TYPE ]; then
+        cp_process_templates \
+            $SHAREDIR/templates/cbuild/packaging/$CPKG_TYPE
 
-            # lp_process_package_files \
-            #     $PRJ_BUILDDIR/packaging $PRJ_VER $PRJ_REV
-        fi
+        PKG_ROOTDIR=$PRJ_BUILDDIR/packaging
+        PKG_STAGEDIR=$PRJ_BUILDDIR/packaging
+        lp_process_package_files
     fi
 
     cd $TOPDIR

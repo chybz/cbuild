@@ -1,0 +1,82 @@
+% OPTS["chmod"]="0755"
+#!/bin/bash
+
+set -e
+
+declare -A VARS
+
+VARS[platform]="%{ $CPKG_PF }%"
+VARS[ostype]="%{ $CPKG_DIST }%"
+VARS[os]="%{ $CPKG_OS }%"
+VARS[arch]="%{ $CPKG_BIN_ARCH }%"
+VARS[name]="%{ $PRJ_NAME }%"
+VARS[version]="%{ $PRJ_VER }%"
+
+VARS[etcdir]="%{ $PKG_ETCDIR }%"
+VARS[bindir]="%{ $PKG_BINDIR }%"
+VARS[libdir]="%{ $PKG_LIBDIR }%"
+VARS[sharedir]="%{ $PKG_SHAREDIR }%"
+VARS[varlibdir]="%{ $PKG_VARDIR }%"
+VARS[varlogdir]="%{ $PKG_LOGDIR }%"
+VARS[varrundir]="%{ $PKG_RUNDIR }%"
+VARS[pluginsdir]="%{ $PKG_LIBDIR/plugins }%"
+
+while [ $# -gt 0 ]; do
+    if [[ "$1" =~ ^--([a-zA-Z0-9_-]+)$ ]]; then
+        VAR=${BASH_REMATCH[1]}
+        VAL=${VARS[${VAR}]}
+
+        if [ -z "$VAL" ]; then
+            echo "unknown option: $VAR"
+            exit 1
+        fi
+
+        echo $VAL
+    else
+        echo "invalid option: $1"
+        exit 1
+    fi
+
+    shift
+done
+
+##############################################################################
+#
+# POD Documentation
+#
+##############################################################################
+: <<=cut
+=pod
+
+=head1 NAME
+
+%{ $PRJ_NAME }%-config - %{ $PRJ_NAME }% information
+
+=head1 DESCRIPTION
+
+%{ $PRJ_NAME }%-config displays compile-time configration used when
+%{ $PRJ_NAME }% was built
+
+=head1 SYNOPSIS
+
+  %{ $PRJ_NAME }%-config [OPTION]...
+
+
+=head1 OPTIONS
+
+  --platform
+  --ostype
+  --os
+  --arch
+  --name
+  --version
+  --etcdir
+  --bindir
+  --libdir
+  --sharedir
+  --varlibdir
+  --varlogdir
+  --varrundir
+  --pluginsdir
+
+=cut

@@ -8,6 +8,18 @@ OPTS["process"]=$((${PRJ_HAS["LIB"]}))
 %{ % }%:
 	dh $@
 
+% if ((${#PRJ_MANPAGES[@]})); then
+override_dh_auto_build-indep:
+	mkdir -p man
+	@echo "building man pages"
+%     for MANPAGE in ${!PRJ_MANPAGES[@]}; do
+	@pod2man \
+		-n %{ $MANPAGE }% \
+		%{ ${PRJ_MANPAGES[$MANPAGE]} }% \
+		man/%{ $MANPAGE }%.1
+%     done
+% fi
+
 % if ((${PRJ_HAS["SVC"]})); then
 override_dh_installinit:
 %     for SVC in ${PRJ_SVCS[@]}; do

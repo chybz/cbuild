@@ -26,7 +26,6 @@ include_directories(%{ "$PRJ_GENINCDIR" }%)
 install(
     DIRECTORY %{ "$PRJ_GENINCDIR/" }%
     DESTINATION include/%{ $PRJ_NAME }%
-    PATTERN ".svn" EXCLUDE
 )
 % if ((${#HEADER_DIRS} > 0)); then
 %     for INCDIR in ${HEADER_DIRS[@]}; do
@@ -34,7 +33,6 @@ install(
 install(
     DIRECTORY %{ "$INCDIR/" }%
     DESTINATION include/%{ $PRJ_NAME }%
-    PATTERN ".svn" EXCLUDE
 )
 %     done
 % fi
@@ -49,7 +47,6 @@ include_directories(%{ "$PRJ_INCDIR" }%)
 install(
     DIRECTORY %{ "$PRJ_INCDIR/" }%
     DESTINATION include/%{ $PRJ_NAME }%
-    PATTERN ".svn" EXCLUDE
 )
 % fi
 % if ((${#PRJ_LIBS} > 0)); then
@@ -57,7 +54,6 @@ install(
 install(
     DIRECTORY %{ "$PRJ_BUILDDIR/pkgconfig/" }%
     DESTINATION lib/pkgconfig
-    PATTERN ".svn" EXCLUDE
 )
 % fi
 
@@ -65,14 +61,23 @@ install(
     DIRECTORY etc/
     DESTINATION /etc/%{ $PRJ_NAME }%
     OPTIONAL
-    PATTERN ".svn" EXCLUDE
 )
 
 install(
     DIRECTORY share/
     DESTINATION share/%{ $PRJ_NAME }%
     OPTIONAL
-    PATTERN ".svn" EXCLUDE
+)
+
+install(
+    PROGRAMS %{ $PRJ_BINDIR }%/%{ $PRJ_NAME }%-config
+    DESTINATION bin
+)
+
+install(
+    DIRECTORY %{ $PRJ_BUILDDIR }%/man/
+    DESTINATION share/man/man1
+    OPTIONAL
 )
 
 % for T in ${PRJ_LIBS[@]}; do
