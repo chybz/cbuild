@@ -4,5 +4,6 @@ OPTS["process"]=$((${PRJ_HAS["BIN_ONLY"]}))
 % if ((${OPTS["process"]})); then
 %     for BIN in ${PRJ_BINS_ONLY[@]}; do
 usr/bin/%{ ${BIN} }%
+usr/share/man/man1/%{ ${BIN} }%.1
 %     done
 % fi

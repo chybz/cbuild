@@ -10,13 +10,14 @@ OPTS["process"]=$((${PRJ_HAS["LIB"]}))
 
 % if ((${#PRJ_MANPAGES[@]})); then
 override_dh_auto_build-indep:
-	mkdir -p man
 	@echo "building man pages"
+	@mkdir -p usr/share/man/man1
 %     for MANPAGE in ${!PRJ_MANPAGES[@]}; do
+	@echo "%{ $MANPAGE }%.1"
 	@pod2man \
 		-n %{ $MANPAGE }% \
 		%{ ${PRJ_MANPAGES[$MANPAGE]} }% \
-		man/%{ $MANPAGE }%.1
+		usr/share/man/man1/%{ $MANPAGE }%.1
 %     done
 % fi
 
