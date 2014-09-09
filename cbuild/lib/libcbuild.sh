@@ -114,7 +114,7 @@ declare -A PRJ_HAS=(
 # Set defaults
 PRJ_NAME=$(basename $TOPDIR)
 PKG_NAME=${PRJ_NAME//_/-}
-PRJ_AUTHOR="Lazy Programmer <eat@joes.com>"
+PKG_AUTHOR="Lazy Programmer <eat@joes.com>"
 PRJ_SRCDIR=$TOPDIR/sources
 PRJ_BUILDDIR=$TOPDIR/build
 PRJ_ETCDIR=$TOPDIR/etc
@@ -131,11 +131,16 @@ PRJ_DEFPREFIX="${PRJ_NAME^^}_"
 PRJ_USER=root
 PRJ_GROUP=$PRJ_USER
 
-[[ -f $CBUILD_CONF ]] && . $CBUILD_CONF
+if [[ -f $CBUILD_CONF ]]; then
+    . $CBUILD_CONF
+    [[ -z "$PKG_VER" ]] && PKG_VER=1.0
+    (($PKG_REV)) || PKG_REV=1
+fi
+
 . $(cpkg-config -L)
 
-PROJECT_VARS="PRJ_NAME PRJ_AUTHOR PKG_NAME PRJ_VER PRJ_REV"
-PROJECT_VARS+=" PRJ_SHORTDESC PRJ_LONGDESC PRJ_TARGET PRJ_DEFPREFIX"
+PROJECT_VARS="PRJ_NAME PKG_AUTHOR"
+PROJECT_VARS+=" PKG_SHORTDESC PKG_LONGDESC PRJ_TARGET PRJ_DEFPREFIX"
 PROJECT_DIRS="PRJ_SRCDIR PRJ_BUILDDIR"
 PROJECT_DIRS+=" PRJ_BINDIR PRJ_TSTDIR PRJ_LIBDIR PRJ_PLUGDIR"
 PROJECT_DIRS+=" PRJ_GENINCDIR PRJ_INCDIR PRJ_PRIVINCDIR"
@@ -1395,9 +1400,7 @@ function cb_configure_targets() {
         $SHAREDIR/templates/build-systems/CMake/PRJ \
         $PRJ_SRCDIR
 
-    if ((!$CB_NO_SCAN)); then
-        cp_process_templates $SHAREDIR/templates/cbuild/PRJ
-    fi
+    cp_process_templates $SHAREDIR/templates/cbuild/PRJ
 
     CPKG_TMPL_VARS="$OLD_TMPL_VARS"
 

@@ -39,8 +39,8 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY_RELEASE %{ $PRJ_LIBDIR }%
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE %{ $PRJ_LIBDIR }%
     OUTPUT_NAME %{ $TARGET }%
-    SOVERSION %{ $PRJ_VER }%
-    VERSION %{ $PRJ_VER }%
+    SOVERSION %{ $PKG_VER }%
+    VERSION %{ $PKG_VER }%
 )
 % if ((${#TARGET_LIBS[*]})); then
 %     LIST=$(cp_join "\n    " ${TARGET_LIBS[@]})

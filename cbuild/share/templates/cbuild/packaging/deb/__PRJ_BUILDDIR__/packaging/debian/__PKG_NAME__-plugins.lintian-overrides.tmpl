@@ -3,6 +3,7 @@ OPTS["process"]=$((${PRJ_HAS["PLUG"]}))
 %{/Bash}%
 % if ((${OPTS["process"]})); then
 %{ ${PKG_NAME} }%-plugins: hardening-no-fortify-functions
+%{ ${PKG_NAME} }%-plugins: new-package-should-close-itp-bug
 %{ ${PKG_NAME} }%-plugins: pkg-has-shlibs-control-file-but-no-actual-shared-libs
 %{ ${PKG_NAME} }%-plugins: postinst-has-useless-call-to-ldconfig
 %{ ${PKG_NAME} }%-plugins: postrm-has-useless-call-to-ldconfig

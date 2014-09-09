@@ -1,0 +1,6 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["LIB"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+lib%{ ${PKG_NAME} }%-dbg: new-package-should-close-itp-bug
+% fi

@@ -1,0 +1,6 @@
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["BIN"]}))
+%{/Bash}%
+% if ((${OPTS["process"]})); then
+%{ ${PKG_NAME} }%-dbg: new-package-should-close-itp-bug
+% fi

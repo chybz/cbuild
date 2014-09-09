@@ -1,6 +1,6 @@
 MAKEFLAGS=--no-print-directory
 PROJECT_NAME=%{ $PRJ_NAME }%
-PROJECT_VERSION=%{ $PRJ_VER }%
+PROJECT_VERSION=%{ $PKG_VER }%
 PACKAGE_NAME=%{ $PKG_NAME }%
 GCOV=%{ $CB_GCOV }%
 BASEDIR=$(shell pwd)
@@ -100,8 +100,9 @@ doc:
 
 package:
 	@cd build && ( \
-		make DESTDIR=packaging install; \
-		dpkg-buildpackage -b -uc \
+		rm -rf usr etc && \
+		make DESTDIR=packaging install && \
+		cd packaging && dpkg-buildpackage -b -uc \
 	)
 
 install:

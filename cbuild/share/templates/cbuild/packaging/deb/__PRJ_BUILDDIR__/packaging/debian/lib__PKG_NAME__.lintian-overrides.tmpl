@@ -4,5 +4,7 @@ OPTS["process"]=$((${PRJ_HAS["LIB"]}))
 % if ((${OPTS["process"]})); then
 lib%{ ${PKG_NAME} }%: package-name-doesnt-match-sonames
 lib%{ ${PKG_NAME} }%: hardening-no-fortify-functions
+lib%{ ${PKG_NAME} }%: new-package-should-close-itp-bug
 lib%{ ${PKG_NAME} }%: embedded-library
+lib%{ ${PKG_NAME} }%: extra-license-file
 % fi

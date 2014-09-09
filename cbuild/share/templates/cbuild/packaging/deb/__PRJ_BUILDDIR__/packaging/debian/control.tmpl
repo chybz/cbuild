@@ -2,31 +2,31 @@
 Source: %{ ${PKG_NAME} }%
 Section: %{ ${PKG_CAT} }%
 Priority: optional
-Maintainer: %{ ${PRJ_AUTHOR} }%
+Maintainer: %{ ${PKG_AUTHOR} }%
 Build-Depends: debhelper (>= 7), build-essential, perl
 Standards-Version: 3.7.2
 
 Package: %{ ${PKG_NAME}-common }%
 Architecture: any
 Depends: ${misc:Depends}
-Description: %{ ${PRJ_SHORTDESC} }% common files
- %{ ${PRJ_SHORTDESC} }% common files
+Description: common files
+ %{ ${PKG_SHORTDESC} }% common files
  .
 % if ((${PRJ_HAS["BIN"]})); then
 
 Package: %{ ${PKG_NAME} }%
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, %{ ${PKG_NAME}-common }%
-Description: %{ ${PRJ_SHORTDESC} }% programs
- %{ ${PRJ_SHORTDESC} }% programs and utilities
+Description: programs
+ %{ ${PKG_SHORTDESC} }% programs and utilities
  .
 
 Package: %{ ${PKG_NAME} }%-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Description: %{ ${PRJ_SHORTDESC} }% debug symbols
- %{ ${PRJ_SHORTDESC} }% debugging support
+Description: debug symbols
+ %{ ${PKG_SHORTDESC} }% debugging support
  .
 % fi
 % if ((${PRJ_HAS["SVC"]})); then
@@ -34,16 +34,16 @@ Description: %{ ${PRJ_SHORTDESC} }% debug symbols
 Package: %{ ${PKG_NAME} }%-services
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, svtools, daemontools, daemontools-run, %{ ${PKG_NAME}-common }%
-Description: %{ ${PRJ_SHORTDESC} }% services
- %{ ${PRJ_SHORTDESC} }% system services
+Description: services
+ %{ ${PKG_SHORTDESC} }% system services
  .
 
 Package: %{ ${PKG_NAME} }%-services-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Description: %{ ${PRJ_SHORTDESC} }% services debug symbols
- %{ ${PRJ_SHORTDESC} }% debugging support
+Description: services debug symbols
+ %{ ${PKG_SHORTDESC} }% debugging support
  .
 % fi
 % if ((${PRJ_HAS["BIN_LIB"]})); then
@@ -51,8 +51,8 @@ Description: %{ ${PRJ_SHORTDESC} }% services debug symbols
 Package: lib%{ ${PKG_NAME} }%
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, %{ ${PKG_NAME}-common }%
-Description: %{ ${PRJ_SHORTDESC} }% libraries
- %{ ${PRJ_SHORTDESC} }% shared libraries
+Description: libraries
+ %{ ${PKG_SHORTDESC} }% shared libraries
  .
 
 Package: lib%{ ${PKG_NAME} }%-dbg
@@ -60,8 +60,8 @@ Section: debug
 Priority: extra
 Depends: lib%{ ${PKG_NAME} }%-dev (= ${binary:Version})
 Architecture: any
-Description: lib%{ ${PRJ_SHORTDESC} }% debug symbols
- lib%{ ${PRJ_SHORTDESC} }% debugging support
+Description: libraries debug symbols
+ lib%{ ${PKG_SHORTDESC} }% debugging support
  .
 % fi
 % if ((${PRJ_HAS["LIB"]})); then
@@ -74,8 +74,8 @@ Depends: ${misc:Depends}, lib%{ ${PKG_NAME} }% (= ${binary:Version})
 %     else
 Depends: ${misc:Depends}%{ ${dev_deps} }%
 %     fi
-Description: %{ ${PRJ_SHORTDESC} }% development files
- %{ ${PRJ_SHORTDESC} }% development headers and files
+Description: development files
+ %{ ${PKG_SHORTDESC} }% development headers and files
  .
 % fi
 % if ((${PRJ_HAS["PLUG"]})); then
@@ -83,15 +83,15 @@ Description: %{ ${PRJ_SHORTDESC} }% development files
 Package: %{ ${PKG_NAME} }%-plugins
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, %{ ${PKG_NAME}-common }%
-Description: %{ ${PRJ_SHORTDESC} }% plugins
- %{ ${PRJ_SHORTDESC} }% plugins shared libraries
+Description: plugins
+ %{ ${PKG_SHORTDESC} }% plugins shared libraries
  .
 
 Package: %{ ${PKG_NAME} }%-plugins-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Description: %{ ${PRJ_SHORTDESC} }% plugins debug symbols
- %{ ${PRJ_SHORTDESC} }%-plugins debugging support
+Description: plugins debug symbols
+ %{ ${PKG_SHORTDESC} }%-plugins debugging support
  .
 % fi
