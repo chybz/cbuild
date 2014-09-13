@@ -68,15 +68,15 @@ plugins: %{ ${PLUG_TARGETS[@]} }%
 tests: %{ ${TST_TARGETS[@]} }%
 
 test:
-	@cd build && prove -m -e '' t
+	@cd build && prove -r -m -e '' t
 
 test-verbose:
-	@cd build && prove -v -m -e '' t
+	@cd build && prove -v -r -m -e '' t
 
 test-report:
 	@mkdir -p build/quality-reports/tests
 	@cd build && prove \
-	    -v -m -e '' \
+	    -v -r -m -e '' \
 	    -P HTML=outfile:quality-reports/tests/index.html,force_inline_css:1,force_inline_js:1 \
 	    t || true
 

@@ -119,6 +119,7 @@ PKG_NAME=${PRJ_NAME//_/-}
 PKG_AUTHOR="Lazy Programmer <eat@joes.com>"
 PRJ_SRCDIR=$TOPDIR/sources
 PRJ_BUILDDIR=$TOPDIR/build
+PRJ_BATSDIR=$TOPDIR/bats
 PRJ_ETCDIR=$TOPDIR/etc
 PRJ_SHAREDIR=$TOPDIR/share
 PRJ_BINDIR=$PRJ_BUILDDIR/bin
@@ -1424,6 +1425,22 @@ function cb_configure_targets() {
     done
 }
 
+function cb_configure_bats() {
+    [[ -d $PRJ_BATSDIR ]] || return 0
+
+    local BAT
+    local BATS=$(find $PRJ_BATSDIR -mindepth 1 -maxdepth 1)
+
+    BATS=${BATS//$PRJ_BATSDIR\/}
+
+    [[ -d $PRJ_TSTDIR ]] || mkdir -p $PRJ_TSTDIR
+    cd $PRJ_TSTDIR
+
+    for BAT in $BATS; do
+        ln -sf ../../bats/$BAT $BAT
+    done
+}
+
 function cb_run_generator() {
     cp_find_cmd CB_GEN "cmake"
     cd $PRJ_BUILDDIR
@@ -1454,6 +1471,7 @@ function cb_configure() {
     cb_scan
     cb_scan_targets_files
     cb_configure_targets
+    cb_configure_bats
     cb_run_generator
     STATUS=0
 }
