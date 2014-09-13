@@ -1,4 +1,7 @@
-% NAME="lib$TARGET"
+% if ((${PLIB_TARGET_MAP[$TARGET]})); then
+%     OPTS["process"]=0
+% else
+%     NAME="lib$TARGET_OUTPUT_NAME"
 prefix=%{ $CPKG_PREFIX }%
 exec_prefix=${prefix}
 libdir=${prefix}/lib
@@ -7,8 +10,9 @@ includedir=${prefix}/include
 Name: %{ $NAME }%
 Description: %{ $PRJ_NAME }% %{ $NAME }% library
 Version: %{ $PKG_VER }%
-% if ((${#SOURCES} > 0)); then
-%     LNK="-L\${libdir} -l${TARGET}"
-% fi
+%     if ((${#SOURCES} > 0)); then
+%         LNK="-L\${libdir} -l${TARGET_OUTPUT_NAME}"
+%     fi
 Libs: %{ $LNK }%
 Cflags: -I${includedir}/%{ $PRJ_NAME }%
+% fi

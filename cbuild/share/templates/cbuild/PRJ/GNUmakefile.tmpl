@@ -30,7 +30,7 @@ binaries: %{ ${BIN_TARGETS[@]} }%
 % declare -a LIB_TARGETS
 %
 % for TARGET in ${PRJ_LIBS[@]}; do
-%     if [[ "${HLIB_MAP[$TARGET]}" ]]; then
+%     if [[ "${HLIB_TARGET_MAP[$TARGET]}" ]]; then
 %         continue
 %     fi
 %

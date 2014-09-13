@@ -89,6 +89,7 @@ declare -A TARGET_PKGDEP_MAP
 declare -A TARGET_PCDEP_MAP
 declare -A TARGET_DEP_HIST
 declare -A HLIB_TARGET_MAP
+declare -A PLIB_TARGET_MAP
 declare -A NOT_FOUND_MAP
 declare -A STD_HEADERS
 declare -a PRJ_HEADER_DIRS
@@ -99,6 +100,7 @@ declare -a PRJ_CXXFLAGS
 declare -a PRJ_LFLAGS
 declare -A PRJ_PKGS
 declare -a PRJ_NOCOV
+declare -a PRJ_PRIVATE_LIBS
 declare -A PRJ_HAS=(
     [BIN]=0
     [BIN_ONLY]=0
@@ -135,6 +137,10 @@ if [[ -f $CBUILD_CONF ]]; then
     . $CBUILD_CONF
     [[ -z "$PKG_VER" ]] && PKG_VER=1.0
     (($PKG_REV)) || PKG_REV=1
+
+    for LIB in ${PRJ_PRIVATE_LIBS[@]}; do
+        PLIB_TARGET_MAP[$LIB]=1
+    done
 fi
 
 . $(cpkg-config -L)
@@ -350,18 +356,29 @@ function cb_get_target_file() {
     echo $CB_STATE_DIR/$TYPE/$TARGET/$NAME
 }
 
+function cb_get_target_output_name() {
+    local TYPE=$1
+    local TARGET=$2
+
+    local NAME="$TARGET"
+
+    if [[ $TYPE == "LIB" && ${PLIB_TARGET_MAP[$TARGET]} == 1 ]]; then
+        # Prepend project name to avoid possible name clash with
+        # an existing system library (embedded external library case)
+        NAME="${PRJ_NAME,,}_$TARGET"
+    fi
+
+    echo $NAME
+}
+
 function cb_get_target_build_name() {
     local TYPE=$1
     local TARGET=$2
 
-    echo "${TYPE,,}_$TARGET"
-}
+    local NAME="${TYPE,,}_"
+    NAME+="$(cb_get_target_output_name $TYPE $TARGET)"
 
-function cb_get_target_id() {
-    local TARGET=$1
-    local NAME=$2
-
-    echo "${TARGET}_${NAME}"
+    echo $NAME
 }
 
 function cb_get_target_dir() {
@@ -414,6 +431,28 @@ function cb_save_target_var() {
     echo "$VAR=\"$@\"" >> $FILE
 }
 
+function cb_set_is_private_lib() {
+    local NAME=$1
+
+    ((${PLIB_TARGET_MAP[$NAME]})) && return 0
+
+    PLIB_TARGET_MAP[$NAME]=0
+
+    local SRCDIR=$PRJ_SRCDIR/${TYPE_DIRS[LIB]}/$NAME
+    local HDRDIR=$PRJ_SRCDIR/${TYPE_DIRS[INC]}/$NAME
+
+    [[ -d $SRCDIR && -f $SRCDIR/.cbuild_private ]] && PLIB_TARGET_MAP[$NAME]=1
+    [[ -d $HDRDIR && -f $HDRDIR/.cbuild_private ]] && PLIB_TARGET_MAP[$NAME]=1
+
+    return 0
+}
+
+function cb_is_private_lib() {
+    local NAME=$1
+
+    return ${PLIB_TARGET_MAP[$NAME]}
+}
+
 function cb_scan_target() {
     local TYPE=$1
     local NAME=$2
@@ -459,6 +498,8 @@ function cb_scan_target() {
     local TARGET_HEADERS
 
     if [ $TYPE = "LIB" ]; then
+        cb_set_is_private_lib $NAME
+
         # Only libraries have "public" headers
         TARGET_HEADERS=$(
             cp_find_re_rel \
@@ -1225,11 +1266,14 @@ function cb_configure_target() {
     cb_configure_target_link $TYPE $TARGET
 
     cb_save_target_var $TYPE $TARGET "TVARS" "TARGET" $TARGET
+    cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_OUTPUT_NAME" \
+        $(cb_get_target_output_name $TYPE $TARGET)
     cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_BUILD_NAME" \
         $(cb_get_target_build_name $TYPE $TARGET)
 
     CPKG_TMPL_PRE=($CB_STATE_DIR/PRJ/CCVARS)
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/OPTS)
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PLIBS)
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "HEADERS"))
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "SOURCES"))
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "TVARS"))
@@ -1282,24 +1326,11 @@ function cb_configure_targets() {
     local AREF
 
     CPKG_TMPL_PRE=($CB_STATE_DIR/PRJ/CCVARS)
-    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/OPTS)
-    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PKGS)
-    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/HAS)
-    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/HLIBS)
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/HEADER_DIRS)
-    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/MANPAGES)
 
     # Create map of project options
-    local OKEY
-    local OFILE=$CB_STATE_DIR/PRJ/OPTS
-    mkdir -p $(dirname $OFILE)
-    > $OFILE
-
-    echo "declare -A PRJ_OPTS=(" >> $OFILE
-    for OKEY in ${!PRJ_OPTS[@]}; do
-        echo "[$OKEY]=${PRJ_OPTS[$OKEY]}" >> $OFILE
-    done
-    echo ")" >> $OFILE
+    cp_save_hash "PRJ_OPTS" $CB_STATE_DIR/PRJ/OPTS
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/OPTS)
 
     # Don't overwrite these file when not scanning
     cp_save_list \
@@ -1309,40 +1340,20 @@ function cb_configure_targets() {
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/NOCOV)
 
     # Create map of system packages used
-    local PKEY
-    local PFILE=$CB_STATE_DIR/PRJ/PKGS
-    mkdir -p $(dirname $PFILE)
-    > $PFILE
-
-    echo "declare -A PRJ_PKGS=(" >> $PFILE
-    for PKEY in ${!PRJ_PKGS[@]}; do
-        echo "[$PKEY]=${PRJ_PKGS[$PKEY]}" >> $PFILE
-    done
-    echo ")" >> $PFILE
+    cp_save_hash "PRJ_PKGS" $CB_STATE_DIR/PRJ/PKGS
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PKGS)
 
     # Create map of target types
-    local TKEY
-    local TFILE=$CB_STATE_DIR/PRJ/HAS
-    mkdir -p $(dirname $TFILE)
-    > $TFILE
-
-    echo "declare -A PRJ_HAS=(" >> $TFILE
-    for TKEY in ${!PRJ_HAS[@]}; do
-        echo "[$TKEY]=${PRJ_HAS[$TKEY]}" >> $TFILE
-    done
-    echo ")" >> $TFILE
+    cp_save_hash "PRJ_HAS" $CB_STATE_DIR/PRJ/HAS
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/HAS)
 
     # Create map of header-only libraries
-    local HKEY
-    local HFILE=$CB_STATE_DIR/PRJ/HLIBS
-    mkdir -p $(dirname $HFILE)
-    > $HFILE
+    cp_save_hash "HLIB_TARGET_MAP" $CB_STATE_DIR/PRJ/HLIBS
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/HLIBS)
 
-    echo "declare -A HLIB_MAP=(" >> $HFILE
-    for HKEY in ${!HLIB_TARGET_MAP[@]}; do
-        echo "[$HKEY]=${HLIB_TARGET_MAP[$HKEY]}" >> $HFILE
-    done
-    echo ")" >> $HFILE
+    # Create map of private libraries
+    cp_save_hash "PLIB_TARGET_MAP" $CB_STATE_DIR/PRJ/PLIBS
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PLIBS)
 
     local TYPE
 
@@ -1369,9 +1380,8 @@ function cb_configure_targets() {
 
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/SVCS)
 
-    cp_save_hash \
-        "PRJ_MANPAGES" \
-        $CB_STATE_DIR/PRJ/MANPAGES
+    cp_save_hash "PRJ_MANPAGES" $CB_STATE_DIR/PRJ/MANPAGES
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/MANPAGES)
 
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/SVCS)
 
