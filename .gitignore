@@ -5,3 +5,7 @@
 Makefile
 cbuild-*
 # CPKG_GITIGNORE END
+# CPKG_GITIGNORE BEGIN
+Makefile
+cbuild-[0-9]*
+# CPKG_GITIGNORE END
