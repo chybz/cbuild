@@ -120,10 +120,13 @@ PKG_AUTHOR="Lazy Programmer <eat@joes.com>"
 PRJ_SRCDIR=$TOPDIR/sources
 PRJ_BUILDDIR=$TOPDIR/build
 PRJ_BATSDIR=$TOPDIR/bats
+PRJ_HAS_BATS=0
 PRJ_ETCDIR=$TOPDIR/etc
 PRJ_SHAREDIR=$TOPDIR/share
 PRJ_BINDIR=$PRJ_BUILDDIR/bin
 PRJ_TSTDIR=$PRJ_BUILDDIR/t
+PRJ_BINTSTDIR=""
+PRJ_BATSTSTDIR=""
 PRJ_LIBDIR=$PRJ_BUILDDIR/lib
 PRJ_PLUGDIR=$PRJ_BUILDDIR/lib/plugins
 PRJ_GENINCDIR=$PRJ_BUILDDIR/${TYPE_DIRS[INC]}.generated
@@ -148,10 +151,11 @@ fi
 
 PROJECT_VARS="PRJ_NAME PKG_AUTHOR"
 PROJECT_VARS+=" PKG_SHORTDESC PKG_LONGDESC PRJ_TARGET PRJ_DEFPREFIX"
-PROJECT_DIRS="PRJ_SRCDIR PRJ_BUILDDIR"
-PROJECT_DIRS+=" PRJ_BINDIR PRJ_TSTDIR PRJ_LIBDIR PRJ_PLUGDIR"
+PROJECT_DIRS="PRJ_SRCDIR PRJ_BUILDDIR PRJ_BATSDIR"
+PROJECT_DIRS+=" PRJ_BINDIR PRJ_TSTDIR PRJ_BINTSTDIR PRJ_BATSTSTDIR"
+PROJECT_DIRS+=" PRJ_LIBDIR PRJ_PLUGDIR"
 PROJECT_DIRS+=" PRJ_GENINCDIR PRJ_INCDIR PRJ_PRIVINCDIR"
-PROJECT_VARS+=" PRJ_USER PRJ_GROUP"
+PROJECT_VARS+=" PRJ_USER PRJ_GROUP PRJ_HAS_BATS"
 CB_TMPL_VARS="TOPDIR $PROJECT_VARS $PROJECT_DIRS"
 export $CB_TMPL_VARS
 
@@ -1425,19 +1429,31 @@ function cb_configure_targets() {
     done
 }
 
-function cb_configure_bats() {
+function cb_configure_tests() {
     [[ -d $PRJ_BATSDIR ]] || return 0
 
     local BAT
     local BATS=$(find $PRJ_BATSDIR -mindepth 1 -maxdepth 1)
 
-    BATS=${BATS//$PRJ_BATSDIR\/}
+    if [[ -n "BATS" ]]; then
+        PRJ_BINTSTDIR=$PRJ_TSTDIR/000_compiled
+        PRJ_BATSTSTDIR=$PRJ_TSTDIR/001_meta
+    else
+        PRJ_BINTSTDIR=$PRJ_TSTDIR
+        PRJ_BATSTSTDIR=$PRJ_TSTDIR
+    fi
 
-    [[ -d $PRJ_TSTDIR ]] || mkdir -p $PRJ_TSTDIR
-    cd $PRJ_TSTDIR
+    [[ -d $PRJ_BATSTSTDIR ]] || mkdir -p $PRJ_BATSTSTDIR
+    cd $PRJ_BATSTSTDIR
+
+    find . -type l -exec rm {} \;
+
+    local BNAME
 
     for BAT in $BATS; do
-        ln -sf ../../bats/$BAT $BAT
+        BNAME=$(basename $BAT)
+        cp_msg "adding Bats test $BNAME"
+        ln -s $BAT $BNAME
     done
 }
 
@@ -1468,10 +1484,10 @@ function cb_configure() {
     cb_find_cpus
     cb_update_caches
     cb_configure_compiler
+    cb_configure_tests
     cb_scan
     cb_scan_targets_files
     cb_configure_targets
-    cb_configure_bats
     cb_run_generator
     STATUS=0
 }
