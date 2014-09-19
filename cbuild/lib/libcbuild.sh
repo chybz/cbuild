@@ -1017,6 +1017,18 @@ function cb_scan_target_files() {
 
                 if [[ "${STD_HEADERS[$FDEP]}" || "${TARGET_MAP[$FDEP]}" ]]; then
                     # Ignore system/this target headers
+                    # Look for additional autolink rules
+                    local -a AUTOLINK=($(cb_autolink $FDEP))
+
+                    if ((${#AUTOLINK[@]} > 0)); then
+                        local PCDEP=(${AUTOLINK[0]})
+
+                        if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
+                            PCDEPS+=($PCDEP)
+                            SEEN_PCDEPS[$PCDEP]=1
+                        fi
+                    fi
+
                     continue
                 fi
 
