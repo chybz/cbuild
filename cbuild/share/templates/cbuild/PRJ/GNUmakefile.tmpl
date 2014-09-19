@@ -4,6 +4,7 @@ PROJECT_VERSION=%{ $PKG_VER }%
 PACKAGE_NAME=%{ $PKG_NAME }%
 GCOV=%{ $CB_GCOV }%
 BASEDIR=$(shell pwd)
+PRJ_BINDIR=%{ $PRJ_BINDIR }%
 % if (($CB_CPUS > 1)); then
 CB_JOBS=-j%{ $CB_CPUS }%
 % else
@@ -68,14 +69,14 @@ plugins: %{ ${PLUG_TARGETS[@]} }%
 tests: %{ ${TST_TARGETS[@]} }%
 
 test:
-	@cd build && prove -r -m -e '' t
+	@cd build && env PRJ_BINDIR=$(PRJ_BINDIR) prove -r -m -e '' t
 
 test-verbose:
-	@cd build && prove -v -r -m -e '' t
+	@cd build && env PRJ_BINDIR=$(PRJ_BINDIR) prove -v -r -m -e '' t
 
 test-report:
 	@mkdir -p build/quality-reports/tests
-	@cd build && prove \
+	@cd build && env PRJ_BINDIR=$(PRJ_BINDIR) prove \
 	    -v -r -m -e '' \
 	    -P HTML=outfile:quality-reports/tests/index.html,force_inline_css:1,force_inline_js:1 \
 	    t || true
@@ -93,7 +94,6 @@ coverage-report:
 	    ; \
 	    sed -i"" -r -e 's,>[^<]+/sources/,>,g' coverage/*.html \
 	)
-
 
 doc:
 	@cd build/doc && doxygen 2> doxygen.log
