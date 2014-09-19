@@ -1005,10 +1005,7 @@ function cb_scan_target_files() {
             FDEPS=(${FDEPS[@]:1})
 
             for FDEP in ${FDEPS[@]}; do
-                if [[ $FDEP =~ ^${PRJ_NAME}/ ]]; then
-                    # Ignore generated headers
-                    continue
-                elif ! [[ $FDEP =~ $CB_HDR_RE ]]; then
+                if ! [[ $FDEP =~ $CB_HDR_RE ]]; then
                     # Ignore unrecognized headers
                     continue
                 fi
@@ -1038,6 +1035,11 @@ function cb_scan_target_files() {
                         fi
                     fi
                 done
+
+                if [[ !$FOUND && $FDEP =~ ^${PRJ_NAME}/ ]]; then
+                    # Ignore generated headers
+                    continue
+                fi
 
                 if ((!$FOUND)); then
                     # No project target owns FDEP
