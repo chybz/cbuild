@@ -110,7 +110,9 @@ declare -A PRJ_HAS=(
     [PLUG]=0
     [BIN_LIB]=0
     [ETCDIR]=0
+    [SYSETCDIR]=0
     [SHAREDIR]=0
+    [SYSSHAREDIR]=0
 )
 
 # Set defaults
@@ -122,7 +124,9 @@ PRJ_BUILDDIR=$TOPDIR/build
 PRJ_BATSDIR=$TOPDIR/bats
 PRJ_HAS_BATS=0
 PRJ_ETCDIR=$TOPDIR/etc
+PRJ_SYSETCDIR=$TOPDIR/etc_
 PRJ_SHAREDIR=$TOPDIR/share
+PRJ_SYSSHAREDIR=$TOPDIR/share_
 PRJ_BINDIR=$PRJ_BUILDDIR/bin
 PRJ_TSTDIR=$PRJ_BUILDDIR/t
 PRJ_BINTSTDIR=$PRJ_TSTDIR
@@ -617,8 +621,16 @@ function cb_scan() {
         PRJ_HAS["ETCDIR"]=1
     fi
 
+    if [ -d $PRJ_SYSETCDIR ]; then
+        PRJ_HAS["SYSETCDIR"]=1
+    fi
+
     if [ -d $PRJ_SHAREDIR ]; then
         PRJ_HAS["SHAREDIR"]=1
+    fi
+
+    if [ -d $PRJ_SYSSHAREDIR ]; then
+        PRJ_HAS["SYSSHAREDIR"]=1
     fi
 
     for TYPE in $CB_SCAN_ORDER; do

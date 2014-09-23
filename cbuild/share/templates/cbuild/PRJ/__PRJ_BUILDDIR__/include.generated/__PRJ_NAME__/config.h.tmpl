@@ -1,3 +1,4 @@
+%# -*- mode: C++ -*-
 % PNAME=${PRJ_NAME^^}
 % PNAME=${PNAME//-/_}
 /*
@@ -19,6 +20,7 @@
 /* Runtime directories */
 #define %{ ${PRJ_DEFPREFIX} }%SYSETCDIR "%{ $PKG_SYSETCDIR }%"
 #define %{ ${PRJ_DEFPREFIX} }%SYSLIBDIR "%{ $PKG_SYSLIBDIR }%"
+#define %{ ${PRJ_DEFPREFIX} }%SYSSHAREDIR "%{ $PKG_SYSSHAREDIR }%"
 #define %{ ${PRJ_DEFPREFIX} }%ETCDIR "%{ $PKG_ETCDIR }%"
 #define %{ ${PRJ_DEFPREFIX} }%BINDIR "%{ $PKG_BINDIR }%"
 #define %{ ${PRJ_DEFPREFIX} }%LIBDIR "%{ $PKG_LIBDIR }%"

@@ -64,8 +64,20 @@ install(
 )
 
 install(
+    DIRECTORY etc_/
+    DESTINATION /etc
+    OPTIONAL
+)
+
+install(
     DIRECTORY share/
     DESTINATION share/%{ $PRJ_NAME }%
+    OPTIONAL
+)
+
+install(
+    DIRECTORY share_/
+    DESTINATION share
     OPTIONAL
 )
 

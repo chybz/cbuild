@@ -1,3 +1,4 @@
+%# -*- mode: C++ -*-
 % PNAME=${PRJ_NAME^^}
 % PNAME=${PNAME//-/_}
 #ifndef __%{ ${PNAME} }%_SYSTEM_CONFIG_H__
@@ -40,6 +41,7 @@ public:
             etc_dir_ = %{ ${PRJ_DEFPREFIX} }%ETCDIR;
             sys_etc_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSETCDIR;
             sys_lib_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSLIBDIR;
+            sys_share_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSSHAREDIR;
             bin_dir_ = %{ ${PRJ_DEFPREFIX} }%BINDIR;
             lib_dir_ = %{ ${PRJ_DEFPREFIX} }%LIBDIR;
             share_dir_ = %{ ${PRJ_DEFPREFIX} }%SHAREDIR;
@@ -59,8 +61,9 @@ public:
             test_etc_dir_ = root_dir + "/" + "test-etc";
             test_data_dir_ = root_dir + "/" + "test-data";
             test_tmp_dir_ = root_dir + "/" + "tmp";
-            sys_etc_dir_ = root_dir + "/" + "etc";
+            sys_etc_dir_ = root_dir + "/" + "etc_";
             sys_lib_dir_ = root_dir + "/" + "lib";
+            sys_share_dir_ = root_dir + "/" + "share_";
             bin_dir_ = build_dir + "/" + "bin";
             lib_dir_ = build_dir + "/" + "lib";
             share_dir_ = root_dir + "/" + "share";
@@ -76,6 +79,7 @@ public:
         directory_map_["test_tmp"] = test_tmp_dir_;
         directory_map_["sys_etc"] = sys_etc_dir_;
         directory_map_["sys_lib"] = sys_lib_dir_;
+        directory_map_["sys_share"] = sys_share_dir_;
         directory_map_["bin"] = bin_dir_;
         directory_map_["lib"] = lib_dir_;
         directory_map_["share"] = share_dir_;
