@@ -70,18 +70,7 @@ function lib_deps() {
 }
 
 if [[ ! $BOOST_LIB ]]; then
-    NEEDED=0
-
-    for PKG in ${!PRJ_PKGS[@]}; do
-        if [[ $PKG =~ boost ]]; then
-            NEEDED=1
-            break
-        fi
-    done
-
-    if [[ ! $NEEDED ]]; then
-        OPTS["process"]=0
-    else
+    if ((${PRJ_AUTOLINK["BOOST"]})); then
         for LIBDIR in ${LIB_DIRS[@]}; do
             BOOST_LIBS=($(find $LIBDIR -name libboost\*-mt.so))
 
@@ -97,6 +86,8 @@ if [[ ! $BOOST_LIB ]]; then
 
         OPTS["recall-foreach"]="BOOST_LIB ${BOOST_LIBS[@]}"
         OPTS["label"]="generating Boost pkg-config support files"
+    else
+        OPTS["process"]=0
     fi
 else
     LIB=$(lib_name $BOOST_LIB)

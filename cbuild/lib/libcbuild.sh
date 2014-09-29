@@ -99,6 +99,7 @@ declare -a PRJ_CFLAGS
 declare -a PRJ_CXXFLAGS
 declare -a PRJ_LFLAGS
 declare -A PRJ_PKGS
+declare -A PRJ_AUTOLINK
 declare -a PRJ_NOCOV
 declare -a PRJ_PRIVATE_LIBS
 declare -A PRJ_HAS=(
@@ -228,6 +229,7 @@ export CB_CPUS=1
 
 # Load autolink definitions
 declare -A CB_AUTOLINK
+declare -A CB_AUTOLINK_GROUP
 
 function cb_check_conf() {
     if [[ -f $CBUILD_CONF ]]; then
@@ -240,6 +242,8 @@ function cb_load_autolink() {
 
     [ -f $FILE ] || return 0
 
+    local GROUP=$(basename $FILE .conf)
+
     local -A AUTOLINK
     . $FILE
 
@@ -247,6 +251,7 @@ function cb_load_autolink() {
 
     for RE in ${!AUTOLINK[@]}; do
         CB_AUTOLINK[$RE]=${AUTOLINK[$RE]}
+        CB_AUTOLINK_GROUP[$RE]=${GROUP^^}
     done
 }
 
@@ -881,7 +886,7 @@ function cb_autolink() {
                 PKG=$PC
             fi
 
-            echo $PC $PKG
+            echo $PC $PKG ${CB_AUTOLINK_GROUP[$RE]}
 
             break
         fi
@@ -922,6 +927,7 @@ function cb_autolink_install_pkg() {
 
     if ((${#AUTOLINK[@]} > 0)); then
         PKG=${AUTOLINK[1]}
+        PRJ_AUTOLINK[${AUTOLINK[2]}]=1
 
         cb_install_pkg $TYPE $TARGET $FDEP $PKG
     else
@@ -1034,6 +1040,7 @@ function cb_scan_target_files() {
 
                     if ((${#AUTOLINK[@]} > 0)); then
                         local PCDEP=(${AUTOLINK[0]})
+                        PRJ_AUTOLINK[${AUTOLINK[2]}]=1
 
                         if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
                             PCDEPS+=($PCDEP)
@@ -1088,6 +1095,7 @@ function cb_scan_target_files() {
                             if ((${#AUTOLINK[@]} > 0)); then
                                 TPCDEPS+=(${AUTOLINK[0]})
                                 PKG=${AUTOLINK[1]}
+                                PRJ_AUTOLINK[${AUTOLINK[2]}]=1
                             fi
                         fi
 
@@ -1373,6 +1381,10 @@ function cb_configure_targets() {
     # Create map of system packages used
     cp_save_hash "PRJ_PKGS" $CB_STATE_DIR/PRJ/PKGS
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PKGS)
+
+    # Create map of needed autolink helpers
+    cp_save_hash "PRJ_AUTOLINK" $CB_STATE_DIR/PRJ/AUTOLINK
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/AUTOLINK)
 
     # Create map of target types
     cp_save_hash "PRJ_HAS" $CB_STATE_DIR/PRJ/HAS

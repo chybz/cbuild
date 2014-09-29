@@ -1,5 +1,9 @@
+% if ((${PRJ_AUTOLINK["DL"]})); then
 Name: libdl
 Description: Wrapper for OS specific dlfcn
 Version: 1
 Requires:
 Libs: -ldl
+% else
+%     OPTS["process"]=0
+% fi

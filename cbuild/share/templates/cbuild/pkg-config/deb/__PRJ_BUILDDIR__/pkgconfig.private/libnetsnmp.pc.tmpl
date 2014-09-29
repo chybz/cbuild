@@ -1,5 +1,9 @@
+% if ((${PRJ_AUTOLINK["NET-SNMP"]})); then
 Name: libnetsnmp
 Description: Wrapper for Net-SNMP libraries
 Version: 1
 Requires:
 Libs: %{ $(net-snmp-config --agent-libs) }%
+% else
+%     OPTS["process"]=0
+% fi
