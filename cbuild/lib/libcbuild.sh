@@ -1515,6 +1515,10 @@ function cb_run_generator() {
 }
 
 function cb_configure() {
+    if (($CB_DEBUG)); then
+        CPKG_DEBUG=1
+    fi
+
     ACTION="configure"
     cb_find_cpus
     cb_update_caches

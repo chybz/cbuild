@@ -29,13 +29,14 @@ fi
 #
 ##############################################################################
 
-OPTSPECS[A]="ADDRESS_SANITIZER::enable address sanitizer:0"
-OPTSPECS[S]="NO_STACK_PROTECTOR::disable stack protector:0"
-OPTSPECS[C]="NO_CCACHE::disable ccache:0"
-OPTSPECS[N]="CB_NO_SCAN::don't scan sources:0"
-OPTSPECS[O]="DONT_OPTIMIZE::disable optimizations:0"
-OPTSPECS[c]="COVERAGE::enable coverage:0"
-OPTSPECS[p]="PROFILING::enable profiling:0"
+OPTSPECS[A]="ADDRESS_SANITIZER::enable address sanitizer:no"
+OPTSPECS[S]="NO_STACK_PROTECTOR::disable stack protector:no"
+OPTSPECS[C]="NO_CCACHE::disable ccache:no"
+OPTSPECS[N]="CB_NO_SCAN::don't scan sources:no"
+OPTSPECS[O]="DONT_OPTIMIZE::disable optimizations:no"
+OPTSPECS[c]="COVERAGE::enable coverage:no"
+OPTSPECS[p]="PROFILING::enable profiling:no"
+OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
 
 cp_get_options "$@"
 

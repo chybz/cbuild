@@ -87,7 +87,7 @@ install(
 )
 
 add_custom_target(
-    %{ $PRJ_NAME }%_config_man
+    %{ ${PRJ_NAME} }%_config_man
     ALL
     COMMAND pod2man -n %{ $PRJ_NAME }%-config %{ $PRJ_BINDIR }%/%{ $PRJ_NAME }%-config %{ $PRJ_BUILDDIR }%/man/%{ $PRJ_NAME }%-config.1
 )
