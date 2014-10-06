@@ -1519,6 +1519,8 @@ function cb_configure() {
         CPKG_DEBUG=1
     fi
 
+    mkdir -p $PRJ_BUILDDIR/man
+
     ACTION="configure"
     cb_find_cpus
     cb_update_caches
