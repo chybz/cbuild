@@ -5,7 +5,7 @@
 prefix=%{ $CPKG_PREFIX }%
 exec_prefix=${prefix}
 libdir=${prefix}/lib
-includedir=${prefix}/include
+includedir=${prefix}/include/%{ $PRJ_NAME }%
 
 Name: %{ $NAME }%
 Description: %{ $PRJ_NAME }% %{ $NAME }% library
@@ -14,5 +14,5 @@ Version: %{ $PKG_VER }%
 %         LNK="-L\${libdir} -l${TARGET_OUTPUT_NAME}"
 %     fi
 Libs: %{ $LNK }%
-Cflags: -I${includedir}/%{ $PRJ_NAME }%
+Cflags: -I${includedir}
 % fi
