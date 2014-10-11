@@ -565,18 +565,14 @@ function cb_scan_targets() {
 
     if [ $TYPE = "LIB" ]; then
         # Libraries have sources and/or headers
-        if [ \
-            ! -d $PRJ_SRCDIR/$TYPE_DIR \
-            -o \
-            ! -d $PRJ_SRCDIR/${TYPE_DIRS[INC]} \
-        ]; then
-            return 0
-        fi
+        [[ \
+            -d $PRJ_SRCDIR/$TYPE_DIR \
+            || \
+            -d $PRJ_SRCDIR/${TYPE_DIRS[INC]} \
+        ]] || return 0
     else
         # Other targets must have sources
-        if [ ! -d $PRJ_SRCDIR/$TYPE_DIR ]; then
-            return 0
-        fi
+        [[ -d $PRJ_SRCDIR/$TYPE_DIR ]] || return 0
     fi
 
     local NAME
@@ -1067,7 +1063,7 @@ function cb_scan_target_files() {
                     fi
                 done
 
-                if [[ !$FOUND && $FDEP =~ ^${PRJ_NAME}/ ]]; then
+                if [[ !$FOUND && -f $PRJ_GENINCDIR/$FDEP ]]; then
                     # Ignore generated headers
                     continue
                 fi
@@ -1276,12 +1272,16 @@ function cb_configure_target_link() {
     # Dependencies
     for DEP in ${TARGET_DEP_MAP[$TARGET_KEY]}; do
         if [[ "${HLIB_TARGET_MAP[$DEP]}" ]]; then
-            continue
+            # Header only library dependency, grab all of its
+            # dependencies
+            for LIB in $(cb_get_pc_list $DEP "--libs-only-l" "-l"); do
+                LIBS+=($LIB)
+            done
+        else
+            local DEPBN=$(cb_get_target_build_name "LIB" $DEP)
+            LIBS+=($DEPBN)
+            DEPS+=($DEPBN)
         fi
-
-        local DEPBN=$(cb_get_target_build_name "LIB" $DEP)
-        LIBS+=($DEPBN)
-        DEPS+=($DEPBN)
     done
 
     for LIB in $(cb_get_pc_list $TARGET "--libs-only-l" "-l"); do
