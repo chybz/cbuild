@@ -1061,20 +1061,22 @@ function cb_scan_target_files() {
                             TDEPS+=($LIB_TARGET)
                             SEEN_TDEPS[$LIB_TARGET]=1
 
-                            # Use library pkgconfig file ...
-                            PCDEPS+=("lib$LIB_TARGET")
-                            SEEN_PCDEPS["lib$LIB_TARGET"]=1
+                            if [[ ! "${PLIB_TARGET_MAP[$LIB_TARGET]}" ]]; then
+                                # Use library pkgconfig file ...
+                                PCDEPS+=("lib$LIB_TARGET")
+                                SEEN_PCDEPS["lib$LIB_TARGET"]=1
 
-                            # ... and ignore everything obtained though it
-                            # pkgconfigs first ...
-                            for DEP in ${TARGET_PCDEP_MAP["LIB_$LIB_TARGET"]}; do
-                                SEEN_PCDEPS[$DEP]=1
-                            done
+                                # ... and ignore everything obtained though it
+                                # pkgconfigs first ...
+                                for DEP in ${TARGET_PCDEP_MAP["LIB_$LIB_TARGET"]}; do
+                                    SEEN_PCDEPS[$DEP]=1
+                                done
 
-                            # ... packages next
-                            for DEP in ${TARGET_PKGDEP_MAP["LIB_$LIB_TARGET"]}; do
-                                SEEN_PKGDEPS[$DEP]=1
-                            done
+                                # ... packages next
+                                for DEP in ${TARGET_PKGDEP_MAP["LIB_$LIB_TARGET"]}; do
+                                    SEEN_PKGDEPS[$DEP]=1
+                                done
+                            fi
                         fi
                     fi
                 done
