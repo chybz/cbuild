@@ -10,9 +10,37 @@ includedir=${prefix}/include/%{ $PRJ_NAME }%
 Name: %{ $NAME }%
 Description: %{ $PRJ_NAME }% %{ $NAME }% library
 Version: %{ $PKG_VER }%
-%     if ((${#SOURCES} > 0)); then
-%         LNK="-L\${libdir} -l${TARGET_OUTPUT_NAME}"
+%
+%     REQS=()
+%
+%     for PCDEP in ${TARGET_PCDEPS[@]}; do
+%         if ((${PRJ_LOCAL_PKGCONFIGS[$PCDEP]})); then
+%             # Ignore locally generated pkg-config file
+%             continue
+%         else
+%             REQS+=($PCDEP)
+%         fi
+%     done
+%
+%     if ((${#REQS[@]})); then
+Requires: %{ $(cp_join " " ${REQS[@]}) }%
 %     fi
-Libs: %{ $LNK }%
+%
+%     LNK=()
+%
+%     if ((${#SOURCES} > 0)); then
+%         LNK+=("-L\${libdir} -l${TARGET_OUTPUT_NAME}")
+%     else
+%         for LIB in ${TARGET_LIBS[@]}; do
+%             LNK+=("-l$LIB")
+%         done
+%     fi
+%
+%     if ((${#LNK[@]})); then
+Libs: %{ $(cp_join " " ${LNK[@]}) }%
+%     else
+Libs:
+%     fi
+%
 Cflags: -I${includedir}
 % fi

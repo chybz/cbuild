@@ -94,6 +94,7 @@ declare -A NOT_FOUND_MAP
 declare -A STD_HEADERS
 declare -a PRJ_HEADER_DIRS
 declare -A PRJ_MANPAGES
+declare -A PRJ_LOCAL_PKGCONFIGS
 declare -A PRJ_OPTS
 declare -a PRJ_CFLAGS
 declare -a PRJ_CXXFLAGS
@@ -1059,6 +1060,21 @@ function cb_scan_target_files() {
                         if [[ ! "${SEEN_TDEPS[$LIB_TARGET]}" ]]; then
                             TDEPS+=($LIB_TARGET)
                             SEEN_TDEPS[$LIB_TARGET]=1
+
+                            # Use library pkgconfig file ...
+                            PCDEPS+=("lib$LIB_TARGET")
+                            SEEN_PCDEPS["lib$LIB_TARGET"]=1
+
+                            # ... and ignore everything obtained though it
+                            # pkgconfigs first ...
+                            for DEP in ${TARGET_PCDEP_MAP["LIB_$LIB_TARGET"]}; do
+                                SEEN_PCDEPS[$DEP]=1
+                            done
+
+                            # ... packages next
+                            for DEP in ${TARGET_PKGDEP_MAP["LIB_$LIB_TARGET"]}; do
+                                SEEN_PKGDEPS[$DEP]=1
+                            done
                         fi
                     fi
                 done
@@ -1153,6 +1169,8 @@ function cb_scan_target_files() {
     cb_add_pkg_deps $TYPE $TARGET ${PKGDEPS[@]}
     cb_add_pc_deps $TYPE $TARGET ${PCDEPS[@]}
 
+    cb_save_target_list $TYPE $TARGET "TARGET_PCDEPS" ${PCDEPS[@]}
+
     return $NEED_RESCAN
 }
 
@@ -1190,7 +1208,13 @@ function cb_get_pc_list() {
     local ITEMS
     local ITEM
 
-    local PKG_CONFIG_PATH=$PRJ_BUILDDIR/pkgconfig.private
+    local PCPATH=$PRJ_BUILDDIR/pkgconfig.private:$PRJ_BUILDDIR/pkgconfig
+
+    if [[ -n "$PKG_CONFIG_PATH" ]]; then
+        PCPATH+=":$PKG_CONFIG_PATH"
+    fi
+
+    local PKG_CONFIG_PATH=$PCPATH
     local TARGET_KEY="${TYPE}_${TARGET}"
 
     for DEP in ${TARGET_PCDEP_MAP[$TARGET_KEY]}; do
@@ -1267,17 +1291,12 @@ function cb_configure_target_link() {
     local LIB
     local -a DEPS
     local DEP
+    local -a PCDEPS
     local TARGET_KEY="${TYPE}_${TARGET}"
 
     # Dependencies
     for DEP in ${TARGET_DEP_MAP[$TARGET_KEY]}; do
-        if [[ "${HLIB_TARGET_MAP[$DEP]}" ]]; then
-            # Header only library dependency, grab all of its
-            # dependencies
-            for LIB in $(cb_get_pc_list $DEP "--libs-only-l" "-l"); do
-                LIBS+=($LIB)
-            done
-        else
+        if [[ ! "${HLIB_TARGET_MAP[$DEP]}" ]]; then
             local DEPBN=$(cb_get_target_build_name "LIB" $DEP)
             LIBS+=($DEPBN)
             DEPS+=($DEPBN)
@@ -1313,6 +1332,7 @@ function cb_configure_target() {
     CPKG_TMPL_PRE=($CB_STATE_DIR/PRJ/CCVARS)
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/OPTS)
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PLIBS)
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/LOCAL_PKGCONFIGS)
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "HEADERS"))
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "SOURCES"))
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "TVARS"))
@@ -1320,6 +1340,7 @@ function cb_configure_target() {
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "TARGET_LINK"))
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "TARGET_LIBS"))
     CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "TARGET_DEPS"))
+    CPKG_TMPL_PRE+=($(cb_get_target_file $TYPE $TARGET "TARGET_PCDEPS"))
 
     local OLD_TMPL_VARS="$CPKG_TMPL_VARS"
     CPKG_TMPL_VARS+=" $CB_TMPL_VARS"
@@ -1436,6 +1457,15 @@ function cb_configure_targets() {
             cp_process_templates \
                 $SHAREDIR/templates/cbuild/pkg-config/$CPKG_TYPE
         fi
+
+        for PCFILE in $(cp_find_rel $PRJ_BUILDDIR/pkgconfig.private); do
+            PCFILE=$(basename $PCFILE .pc)
+            PRJ_LOCAL_PKGCONFIGS[$PCFILE]=1
+        done
+
+        # Create map of locally generated pkg-config file
+        cp_save_hash "PRJ_LOCAL_PKGCONFIGS" $CB_STATE_DIR/PRJ/LOCAL_PKGCONFIGS
+        CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/LOCAL_PKGCONFIGS)
     fi
 
     if [ -d $SHAREDIR/templates/cbuild/packaging/$CPKG_TYPE ]; then
