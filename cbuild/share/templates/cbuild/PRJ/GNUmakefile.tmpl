@@ -68,13 +68,13 @@ plugins: %{ ${PLUG_TARGETS[@]} }%
 
 tests: %{ ${TST_TARGETS[@]} }%
 
-test:
+test: tests
 	@cd build && env PRJ_BINDIR=$(PRJ_BINDIR) prove -r -m -e '' t
 
-test-verbose:
+test-verbose: tests
 	@cd build && env PRJ_BINDIR=$(PRJ_BINDIR) prove -v -r -m -e '' t
 
-test-report:
+test-report: tests
 	@mkdir -p build/quality-reports/tests
 	@cd build && env PRJ_BINDIR=$(PRJ_BINDIR) prove \
 	    -v -r -m -e '' \
