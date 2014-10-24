@@ -21,7 +21,9 @@ function handle_trap() {
     local MSG
     local FUNC
 
-    if [[ $SIG == "INT" || $SIG == "TERM" ]]; then
+    if [[ $SIG == "EXIT" ]]; then
+        exit 0
+    elif [[ $SIG == "INT" || $SIG == "TERM" ]]; then
         MSG="aborted"
         FUNC="cp_error"
         trap '' EXIT
@@ -43,7 +45,9 @@ function handle_trap() {
         FUNC="cp_msg"
     fi
 
-    eval "$FUNC $MSG"
+    if [[ -n "$FUNC" ]]; then
+        eval "$FUNC $MSG"
+    fi
 
     exit $STATUS
 }
@@ -1527,7 +1531,14 @@ function cb_configure_tests() {
 function cb_run_generator() {
     cp_find_cmd CB_GEN "cmake"
     cd $PRJ_BUILDDIR
-    $CB_GEN -DCMAKE_INSTALL_PREFIX=$CPKG_PREFIX $PRJ_SRCDIR
+
+    local -a GENOPTS=("-DCMAKE_INSTALL_PREFIX=$CPKG_PREFIX")
+
+    if [[ -n "$CMAKE_GEN" && $CMAKE_GEN != "Unix Makefiles" ]]; then
+        GENOPTS+=("-G" "$CMAKE_GEN")
+    fi
+
+    $CB_GEN "${GENOPTS[@]}" $PRJ_SRCDIR
 
     # Clean and remove those pesky cmake_progress_* from makefiles
     local -a MAKEFILES=($(
