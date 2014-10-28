@@ -639,6 +639,13 @@ function cb_scan() {
         PRJ_HAS["SYSSHAREDIR"]=1
     fi
 
+    local OLD_TMPL_VARS="$CPKG_TMPL_VARS"
+    CPKG_TMPL_VARS+=" $CB_TMPL_VARS"
+
+    cp_process_templates $SHAREDIR/templates/cbuild/PRJ
+
+    CPKG_TMPL_VARS="$OLD_TMPL_VARS"
+
     for TYPE in $CB_SCAN_ORDER; do
         cb_scan_targets $TYPE
     done
@@ -1488,8 +1495,6 @@ function cb_configure_targets() {
     cp_process_templates \
         $SHAREDIR/templates/build-systems/CMake/PRJ \
         $PRJ_SRCDIR
-
-    cp_process_templates $SHAREDIR/templates/cbuild/PRJ
 
     CPKG_TMPL_VARS="$OLD_TMPL_VARS"
 
