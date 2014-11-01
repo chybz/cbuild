@@ -1,0 +1,58 @@
+# $NetBSD$
+
+PKGNAME=	%{ ${PKG_NAME} }%-%{ ${PKG_VER} }%
+CATEGORIES=	%{ ${PKG_CAT} }%
+% if (($PKG_FROM_GH)); then
+HOMEPAGE=	%{ ${PKG_GH_URL} }%
+GHCOMMIT=	%{ ${PKG_GH_COMMIT} }%
+DISTNAME=	${GHCOMMIT}.zip
+MASTER_SITES=	%{ ${PKG_GH_URL} }%/archive/
+DIST_SUBDIR=	%{ ${PKG_NAME} }%
+% fi
+EXTRACT_SUFX=	# none
+
+MAINTAINER=	%{ ${PKG_AUTHOR_EMAIL} }%
+COMMENT=	%{ ${PKG_SHORTDESC} }%
+LICENSE=	mit
+%
+% declare -a BLINK3
+%
+% if ((${#PRJ_PKGS[@]})); then
+
+%     for DEP in ${!PRJ_PKGS[@]}; do
+%         DPATH=$(pkg_info -Q PKGPATH $DEP)
+%         DNAME=$(basename $DPATH)
+%         BLINK3+=("../../$DPATH/buildlink3.mk")
+DEPENDS+=	%{ $DNAME }%>=0:../../%{ $DPATH }%
+%     done
+% fi
+
+WRKSRC=		${WRKDIR}/%{ ${PKG_NAME} }%-${GHCOMMIT}
+USE_LANGUAGES=	c c++
+USE_CMAKE=	yes
+USE_TOOLS+=gmake
+% CFGFILES=$(cp_find_rel $PKG_SOURCEDIR/etc)
+% if [[ -n "$CFGFILES" ]]; then
+
+EGDIR=		${PREFIX}/share/${PKGBASE}/etc/${PKGBASE}
+%     for CFGFILE in $CFGFILES; do
+CONF_FILES+=	${EGDIR}/%{ $CFGFILE }% \
+		${PKG_SYSCONFDIR}/${PKGBASE}/%{ $CFGFILE }%
+%     done
+
+OWN_DIRS+=	${PKG_SYSCONFDIR}/${PKGBASE}
+% CFGDIRS=$(cp_find_rel $PKG_SOURCEDIR/etc "d")
+%     for CFGDIR in $CFGDIRS; do
+OWN_DIRS+=	${PKG_SYSCONFDIR}/${PKGBASE}/%{ $CFGDIR }%
+%     done
+% fi
+
+CBUILD=		cbuild
+
+do-configure:
+	cd ${WRKSRC} && ${CBUILD} -C
+
+% for BL3 in ${BLINK3[@]}; do
+.include "%{ $BL3 }%"
+% done
+.include "../../mk/bsd.pkg.mk"

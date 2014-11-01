@@ -1,4 +1,3 @@
-MAKEFLAGS=--no-print-directory
 PROJECT_NAME=%{ $PRJ_NAME }%
 PROJECT_VERSION=%{ $PKG_VER }%
 PACKAGE_NAME=%{ $PKG_NAME }%
@@ -98,22 +97,54 @@ coverage-report:
 doc:
 	@cd build/doc && doxygen 2> doxygen.log
 
-package:
+% if (($CPKG_IS_DEB)); then
+package: build-project
 	@cd build && ( \
 		rm -rf usr etc && \
 		make DESTDIR=packaging install && \
 		cd packaging && dpkg-buildpackage -b -uc \
 	)
+% elif (($CPKG_IS_PKGSRC)); then
+package:
+	@rsync -aq build/packaging/ %{ $PKGSRC_DIR/$PKG_CAT/$PKG_NAME/ }%
+	@cd %{ $PKGSRC_DIR/$PKG_CAT/$PKG_NAME/ }% && ( \
+		sudo -s -- " \
+		    bmake distclean && \
+		    bmake fetch && \
+		    bmake mdi && \
+		    bmake && \
+		    bmake stage-install CHECK_FILES=no && \
+		    bmake print-PLIST > PLIST && \
+		    bmake install-clean && \
+		    bmake package \
+		" \
+	)
+% fi
+
+update-pkg: package
+% if (($CPKG_IS_DEB)); then
+	@sudo dpkg -i build/*.deb
+% elif (($CPKG_IS_PKGSRC)); then
+	@sudo -s -- " \
+	    pkg_add \
+	        -U \
+	        %{ $PKGSRC_DIR/packages/All/${PKG_NAME}-${PKG_VER}.tgz }% \
+	"
+% fi
 
 install:
-	@sudo dpkg -i DEBS/*.deb
+	@cd build && make DESTDIR=$(DESTDIR) install
 
+% if (($CPKG_IS_DEB)); then
 upload:
 	@cd DEBS && erepo-upload
+% fi
 
 clean:
 	@rm -rf build
+% if (($CPKG_IS_DEB)); then
 	@rm -f DEBS/$(PACKAGE_NAME)*
+% fi
 
 distclean: clean
 	@rm -rf .cbuild

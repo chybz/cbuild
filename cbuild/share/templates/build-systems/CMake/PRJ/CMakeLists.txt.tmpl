@@ -21,38 +21,39 @@ add_definitions(
 % fi
 )
 
-include_directories(%{ "$PRJ_GENINCDIR" }%)
+include_directories(%{ "../build/$PRJ_GENINCNAME" }%)
 
 install(
-    DIRECTORY %{ "$PRJ_GENINCDIR/" }%
+    DIRECTORY %{ "../build/$PRJ_GENINCNAME/" }%
     DESTINATION include/%{ $PRJ_NAME }%
 )
 % if ((${#HEADER_DIRS} > 0)); then
 %     for INCDIR in ${HEADER_DIRS[@]}; do
+%         RELDIR=${INCDIR//$PRJ_SRCDIR\//}
 
 install(
-    DIRECTORY %{ "$INCDIR/" }%
+    DIRECTORY %{ "$RELDIR/" }%
     DESTINATION include/%{ $PRJ_NAME }%
 )
 %     done
 % fi
 % if [ -d "$PRJ_PRIVINCDIR" ]; then
 
-include_directories(%{ "$PRJ_PRIVINCDIR" }%)
+include_directories(%{ "../build/$PRJ_PRIVINCNAME" }%)
 % fi
 % if [ -d "$PRJ_INCDIR" ]; then
 
-include_directories(%{ "$PRJ_INCDIR" }%)
+include_directories(%{ "../$PRJ_INCNAME" }%)
 
 install(
-    DIRECTORY %{ "$PRJ_INCDIR/" }%
+    DIRECTORY %{ "../$PRJ_INCNAME" }%
     DESTINATION include/%{ $PRJ_NAME }%
 )
 % fi
 % if ((${#PRJ_LIBS} > 0)); then
 
 install(
-    DIRECTORY %{ "$PRJ_BUILDDIR/pkgconfig/" }%
+    DIRECTORY %{ "../build/pkgconfig/" }%
     DESTINATION lib/pkgconfig
 )
 % fi
@@ -82,19 +83,19 @@ install(
 )
 
 install(
-    PROGRAMS %{ $PRJ_BINDIR }%/%{ $PRJ_NAME }%-config
+    PROGRAMS ../build/bin/%{ $PRJ_NAME }%-config
     DESTINATION bin
 )
 
 add_custom_target(
     %{ ${PRJ_NAME} }%_config_man
     ALL
-    COMMAND pod2man -n %{ $PRJ_NAME }%-config %{ $PRJ_BINDIR }%/%{ $PRJ_NAME }%-config %{ $PRJ_BUILDDIR }%/man/%{ $PRJ_NAME }%-config.1
+    COMMAND pod2man -n %{ $PRJ_NAME }%-config ../build/bin/%{ $PRJ_NAME }%-config ../build/man/%{ $PRJ_NAME }%-config.1
 )
 
 install(
-    DIRECTORY %{ $PRJ_BUILDDIR }%/man/
-    DESTINATION share/man/man1
+    DIRECTORY ../build/man/
+    DESTINATION %{ ${PKG_MANDIR//$CPKG_PREFIX\//} }%/man1
     OPTIONAL
 )
 

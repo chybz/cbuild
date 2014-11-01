@@ -122,8 +122,6 @@ declare -A PRJ_HAS=(
 )
 
 # Set defaults
-PRJ_NAME=$(basename $TOPDIR)
-PKG_NAME=${PRJ_NAME//_/-}
 PKG_AUTHOR="Lazy Programmer <eat@joes.com>"
 PRJ_SRCDIR=$TOPDIR/sources
 PRJ_BUILDDIR=$TOPDIR/build
@@ -139,11 +137,13 @@ PRJ_BINTSTDIR=$PRJ_TSTDIR
 PRJ_BATSTSTDIR=$PRJ_TSTDIR
 PRJ_LIBDIR=$PRJ_BUILDDIR/lib
 PRJ_PLUGDIR=$PRJ_BUILDDIR/lib/plugins
-PRJ_GENINCDIR=$PRJ_BUILDDIR/${TYPE_DIRS[INC]}.generated
-PRJ_INCDIR=$PRJ_BUILDDIR/${TYPE_DIRS[INC]}
-PRJ_PRIVINCDIR=$PRJ_BUILDDIR/${TYPE_DIRS[INC]}.private
+PRJ_GENINCNAME=${TYPE_DIRS[INC]}.generated
+PRJ_GENINCDIR=$PRJ_BUILDDIR/${PRJ_GENINCNAME}
+PRJ_INCNAME=${TYPE_DIRS[INC]}
+PRJ_INCDIR=$PRJ_BUILDDIR/${PRJ_INCNAME}
+PRJ_PRIVINCNAME=${TYPE_DIRS[INC]}.private
+PRJ_PRIVINCDIR=$PRJ_BUILDDIR/${PRJ_PRIVINCNAME}
 PRJ_TARGET="none"
-PRJ_DEFPREFIX="${PRJ_NAME^^}_"
 PRJ_USER=root
 PRJ_GROUP=$PRJ_USER
 
@@ -155,7 +155,12 @@ if [[ -f $CBUILD_CONF ]]; then
     for LIB in ${PRJ_PRIVATE_LIBS[@]}; do
         PLIB_TARGET_MAP[$LIB]=1
     done
+
+    [[ -n "$PRJ_NAME" ]] || (echo "PRJ_NAME not set" && exit 1)
 fi
+
+PKG_NAME=${PRJ_NAME//_/-}
+PRJ_DEFPREFIX="${PRJ_NAME^^}_"
 
 . $(cpkg-config -L)
 
@@ -165,6 +170,7 @@ PROJECT_DIRS="PRJ_SRCDIR PRJ_BUILDDIR PRJ_BATSDIR"
 PROJECT_DIRS+=" PRJ_BINDIR PRJ_TSTDIR PRJ_BINTSTDIR PRJ_BATSTSTDIR"
 PROJECT_DIRS+=" PRJ_LIBDIR PRJ_PLUGDIR"
 PROJECT_DIRS+=" PRJ_GENINCDIR PRJ_INCDIR PRJ_PRIVINCDIR"
+PROJECT_VARS+=" PRJ_GENINCNAME PRJ_INCNAME PRJ_PRIVINCNAME"
 PROJECT_VARS+=" PRJ_USER PRJ_GROUP PRJ_HAS_BATS"
 CB_TMPL_VARS="TOPDIR $PROJECT_VARS $PROJECT_DIRS"
 export $CB_TMPL_VARS
@@ -987,6 +993,11 @@ function cb_scan_target_files() {
         CLEAN_EXPRS+=("-e s,$DIR/,,g")
     done
 
+    if (($CPKG_IS_PKGSRC)); then
+        # Remove buildlink include dirs
+        CLEAN_EXPRS+=("-e s,[^[:space:]]+/.buildlink/include/,,g")
+    fi
+
     CLEAN_EXPRS+=("-e s,CBUILD_SOURCE:[[:space:]],,g")
 
     # Scan all of this target files
@@ -1007,7 +1018,7 @@ function cb_scan_target_files() {
         local DEPLINES=$(
             $SCAN_CMD ${FILES[@]} 2>&1 | \
             $CB_CPP -P | \
-            sed ${CLEAN_EXPRS[@]}
+            cp_run_sed ${CLEAN_EXPRS[@]}
         )
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
@@ -1140,35 +1151,6 @@ function cb_scan_target_files() {
                     fi
                 fi
 
-                if ((!$FOUND)); then
-                    local HINT
-
-                    if [[ $FDEP =~ / ]]; then
-                        # Include with library name prefix
-                        HINT=$(dirname $FDEP)
-                        HINT=${HINT%%/*}
-                    else
-                        # Remove any extension
-                        HINT=${FDEP%%\.*}
-                    fi
-
-                    local -a MATCHES=($(lp_find_c_lib $HINT))
-
-                    if ((${#MATCHES} > 0)); then
-                        local LABEL="Target $TYPE $TARGET depends"
-                        LABEL+=" on header '$FDEP'"
-                        LABEL+=", but it was not found on this system.\n\n"
-                        LABEL+="The following package(s) may provide it:"
-
-                        cp_choose "$LABEL" "Install a package" ${MATCHES[@]}
-
-                        if [ -n "$CPKG_CHOICE" ]; then
-                            lp_install_packages $CPKG_CHOICE
-                            NEED_RESCAN=1
-                        fi
-                    fi
-                fi
-
                 if ((!$NEED_RESCAN && !$FOUND)); then
                     cp_warning \
                         "no target found for '$FDEP' ($TYPE $TARGET $KEYFILE)"
@@ -1254,20 +1236,20 @@ function cb_configure_target_include() {
     local TARGET=$2
 
     set +e
-    local -a TARGET_INC=(
-        $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET
-    )
+    local -a TARGET_INC=()
+    #     $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET
+    # )
 
     local INC
 
     INC=$PRJ_SRCDIR/${TYPE_DIRS[INC]}/$TARGET
-    [ -d $INC ] && TARGET_INC+=($INC)
+    [ -d $INC ] && TARGET_INC+=(../${TYPE_DIRS[INC]}/$TARGET)
 
     INC=$PRJ_SRCDIR/${TYPE_DIRS[INC]}.private/$TARGET
-    [ -d $INC ] && TARGET_INC+=($INC)
+    [ -d $INC ] && TARGET_INC+=(../${TYPE_DIRS[INC]}.private/$TARGET)
 
     INC=$PRJ_BUILDDIR/${TYPE_DIRS[INC]}.generated
-    [ -d $INC ] && TARGET_INC+=($INC)
+    [ -d $INC ] && TARGET_INC+=(../../../build/${TYPE_DIRS[INC]}.generated)
 
     local DEP
     local TARGET_KEY="${TYPE}_${TARGET}"
@@ -1275,7 +1257,7 @@ function cb_configure_target_include() {
     # Include directories of dependencies
     for DEP in ${TARGET_DEP_MAP[$TARGET_KEY]}; do
         INC=$PRJ_SRCDIR/${TYPE_DIRS[INC]}/$DEP
-        [ -d $INC ] && TARGET_INC+=($INC)
+        [ -d $INC ] && TARGET_INC+=(../../${TYPE_DIRS[INC]}/$DEP)
     done
 
     local PCFLAGS=("--cflags-only-I" "-I" $CPKG_PREFIX/include)
@@ -1358,17 +1340,15 @@ function cb_configure_target() {
     local OLD_TMPL_VARS="$CPKG_TMPL_VARS"
     CPKG_TMPL_VARS+=" $CB_TMPL_VARS"
 
-    if ((!$CB_NO_SCAN)); then
-        if [[ ! "${HLIB_TARGET_MAP[$TARGET]}" ]]; then
-            cp_process_templates \
-                $SHAREDIR/templates/build-systems/CMake/$TYPE \
-                $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET
-        fi
+    if [[ ! "${HLIB_TARGET_MAP[$TARGET]}" ]]; then
+        cp_process_templates \
+            $SHAREDIR/templates/build-systems/CMake/$TYPE \
+            $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET
+    fi
 
-        if [ -d $SHAREDIR/templates/cbuild/$TYPE ]; then
-            cp_process_templates \
-                $SHAREDIR/templates/cbuild/$TYPE
-        fi
+    if [ -d $SHAREDIR/templates/cbuild/$TYPE ]; then
+        cp_process_templates \
+        $SHAREDIR/templates/cbuild/$TYPE
     fi
 
     CPKG_TMPL_VARS="$OLD_TMPL_VARS"
@@ -1534,6 +1514,8 @@ function cb_configure_tests() {
 }
 
 function cb_run_generator() {
+    ((!$PKG_UPDATE)) || return 0
+
     cp_find_cmd CB_GEN "cmake"
     cd $PRJ_BUILDDIR
 
@@ -1566,6 +1548,8 @@ function cb_configure() {
     if (($CB_DEBUG)); then
         CPKG_DEBUG=1
     fi
+
+    cb_check_conf
 
     mkdir -p $PRJ_BUILDDIR/man
 

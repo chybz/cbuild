@@ -38,6 +38,7 @@ OPTSPECS[c]="COVERAGE::enable coverage:no"
 OPTSPECS[p]="PROFILING::enable profiling:no"
 OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
 OPTSPECS[G]="CMAKE_GEN:STRING:choose CMake generator:Unix Makefiles"
+OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
 
 cp_get_options "$@"
 
