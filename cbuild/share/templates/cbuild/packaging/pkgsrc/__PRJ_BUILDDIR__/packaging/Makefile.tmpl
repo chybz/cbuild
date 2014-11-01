@@ -2,12 +2,14 @@
 
 PKGNAME=	%{ ${PKG_NAME} }%-%{ ${PKG_VER} }%
 CATEGORIES=	%{ ${PKG_CAT} }%
-% if (($PKG_FROM_GH)); then
-HOMEPAGE=	%{ ${PKG_GH_URL} }%
-GHCOMMIT=	%{ ${PKG_GH_COMMIT} }%
-DISTNAME=	${GHCOMMIT}.zip
-MASTER_SITES=	%{ ${PKG_GH_URL} }%/%{ ${PKG_GH_DIR} }%/
+% if (($PKG_FROM_GIT)); then
+HOMEPAGE=	%{ ${PKG_GIT_URL} }%
+GITCOMMIT=	%{ ${PKG_GIT_COMMIT} }%
+MASTER_SITES=	%{ ${PKG_GIT_FETCH_URL} }%/
+%     if (($PKG_GIT_SUBDIR)); then
+DISTNAME=	${GITCOMMIT}.zip
 DIST_SUBDIR=	%{ ${PKG_NAME} }%
+%     fi
 % fi
 EXTRACT_SUFX=	# none
 
@@ -27,7 +29,7 @@ DEPENDS+=	%{ $DNAME }%>=0:../../%{ $DPATH }%
 %     done
 % fi
 
-WRKSRC=		${WRKDIR}/%{ ${PKG_NAME} }%-${GHCOMMIT}
+WRKSRC=		${WRKDIR}/%{ ${PKG_NAME} }%-${GITCOMMIT}
 USE_LANGUAGES=	c c++
 USE_CMAKE=	yes
 USE_TOOLS+=gmake
