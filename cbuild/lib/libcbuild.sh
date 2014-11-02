@@ -1014,7 +1014,7 @@ function cb_scan_target_files() {
 
         # Get dependency info from compiler
         local DEPLINES=$(
-            $SCAN_CMD ${FILES[@]} 2>&1 | \
+            $SCAN_CMD ${FILES[@]} 2>&1 | tee raw_scan.log | \
             $CB_CPP -P | \
             cp_run_sed ${CLEAN_EXPRS[@]} | \
             tr -s ' ' | \
