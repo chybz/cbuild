@@ -6,9 +6,11 @@ CATEGORIES=	%{ ${PKG_CAT} }%
 HOMEPAGE=	%{ ${PKG_GIT_URL} }%
 GITCOMMIT=	%{ ${PKG_GIT_COMMIT} }%
 MASTER_SITES=	%{ ${PKG_GIT_FETCH_URL} }%/
-DISTNAME=	${GITCOMMIT}.zip
 %     if (($PKG_FROM_GITHUB)); then
+DISTNAME=	${GITCOMMIT}.zip
 DIST_SUBDIR=	%{ ${PKG_NAME} }%
+%     elif (($PKG_FROM_GITLIST)); then
+DISTNAME=	${GITCOMMIT}
 %     fi
 % fi
 EXTRACT_SUFX=	# none
