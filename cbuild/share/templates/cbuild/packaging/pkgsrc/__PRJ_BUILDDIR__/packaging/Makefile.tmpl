@@ -12,6 +12,7 @@ DIST_SUBDIR=	%{ ${PKG_NAME} }%
 %     elif (($PKG_FROM_GITLIST)); then
 DISTNAME=	${GITCOMMIT}
 DISTFILES=	${GITCOMMIT}.zip
+EXTRACT_DIR=	${WRKSRC}
 %     fi
 % fi
 EXTRACT_SUFX=	# none
