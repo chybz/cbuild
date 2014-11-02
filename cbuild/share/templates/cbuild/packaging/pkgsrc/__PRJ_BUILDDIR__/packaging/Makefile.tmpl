@@ -56,7 +56,7 @@ OWN_DIRS+=	${PKG_SYSCONFDIR}/${PKGBASE}/%{ $CFGDIR }%
 CBUILD=		cbuild
 
 do-configure:
-	cd ${WRKSRC} && env ${MAKE_ENV} ${CBUILD} -C
+	@cd ${WRKSRC} && env ${MAKE_ENV} ${CBUILD} -C
 
 % for BL3 in ${BLINK3[@]}; do
 .include "%{ $BL3 }%"
