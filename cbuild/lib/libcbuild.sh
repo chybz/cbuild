@@ -104,6 +104,7 @@ declare -a PRJ_CFLAGS
 declare -a PRJ_CXXFLAGS
 declare -a PRJ_LFLAGS
 declare -A PRJ_PKGS
+declare -A PRJ_RUNTIME_PKGS
 declare -A PRJ_AUTOLINK
 declare -a PRJ_NOCOV
 declare -a PRJ_PRIVATE_LIBS
@@ -288,9 +289,7 @@ function cb_find_cpus() {
     local CPUS=1
 
     if [[ $CPKG_OS == "Linux" ]]; then
-        CPUS=$(grep "^cpu cores" /proc/cpuinfo | head -n 1 | cut -d : -f 2)
-        CPUS=${CPUS## }
-        CPUS=${CPUS%% }
+        CPUS=$(nproc)
     elif [[ $CPKG_OS == "Darwin" ]]; then
         CPUS=$(/usr/sbin/sysctl machdep.cpu.core_count | cut -d : -f 2)
         CPUS=${CPUS## }
@@ -999,6 +998,7 @@ function cb_scan_target_files() {
     fi
 
     CLEAN_EXPRS+=("-e s,CBUILD_SOURCE:[[:space:]],,g")
+    CLEAN_EXPRS+=("-e /^$/d")
 
     # Scan all of this target files
     for KIND in SOURCES HEADERS; do
@@ -1018,7 +1018,8 @@ function cb_scan_target_files() {
         local DEPLINES=$(
             $SCAN_CMD ${FILES[@]} 2>&1 | \
             $CB_CPP -P | \
-            cp_run_sed ${CLEAN_EXPRS[@]}
+            cp_run_sed ${CLEAN_EXPRS[@]} | \
+            tr -s ' '
         )
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
@@ -1027,17 +1028,33 @@ function cb_scan_target_files() {
         local PKG
         local DEP
 
+        local OLD_IFS="$IFS"
+        IFS=""
+
         # Read and clean dependencies
-        for DEPLINE in "$DEPLINES"; do
+        while read DEPLINE; do
+            IFS="$OLD_IFS"
             read -a FDEPS <<<$DEPLINE
 
             if ((!${#FDEPS[@]})); then
                 # No dependencies
+                IFS=""
                 continue
             fi
 
             # First element is target file (source or header)
             KEYFILE=${FDEPS[0]}
+
+            local IS_HEADER IS_SOURCE
+
+            if [[ $KEYFILE =~ $CB_HDR_RE ]]; then
+                IS_HEADER=1
+                IS_SOURCE=0
+            elif [[ $KEYFILE =~ $CB_SRC_RE ]]; then
+                IS_HEADER=0
+                IS_SOURCE=1
+            fi
+
             # Rest is dependencies
             FDEPS=(${FDEPS[@]:1})
 
@@ -1140,6 +1157,11 @@ function cb_scan_target_files() {
                             SEEN_PKGDEPS[$PKG]=1
                         fi
 
+                        if (($IS_HEADER)); then
+                            # Runtime package dependency
+                            PRJ_RUNTIME_PKGS[$PKG]=1
+                        fi
+
                         local PCDEP
 
                         for PCDEP in ${TPCDEPS[@]}; do
@@ -1157,7 +1179,11 @@ function cb_scan_target_files() {
                     NOT_FOUND_MAP[$FDEP]=1
                 fi
             done
-        done
+
+            IFS=""
+        done <<<$DEPLINES
+
+        IFS="$OLD_IFS"
     done
 
     cb_add_deps $TYPE $TARGET ${TDEPS[@]}
@@ -1395,6 +1421,10 @@ function cb_configure_targets() {
     # Create map of system packages used
     cp_save_hash "PRJ_PKGS" $CB_STATE_DIR/PRJ/PKGS
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PKGS)
+
+    # Create map of system packages used at runtime
+    cp_save_hash "PRJ_RUNTIME_PKGS" $CB_STATE_DIR/PRJ/RUNTIME_PKGS
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/RUNTIME_PKGS)
 
     # Create map of needed autolink helpers
     cp_save_hash "PRJ_AUTOLINK" $CB_STATE_DIR/PRJ/AUTOLINK

@@ -1,0 +1,24 @@
+% if ((!${PRJ_HAS["LIB"]})); then
+%     OPTS["process"]=0
+% else
+# $NetBSD$
+%     if ((!${PRJ_HAS["BIN_LIB"]})); then
+BUILDLINK_DEPMETHOD.%{ $PKG_NAME }%?=	build
+%     fi
+
+BUILDLINK_TREE+=	%{ $PKG_NAME }%
+
+.if !defined(%{ ${PKG_NAME^^} }%_BUILDLINK3_MK)
+%{ ${PKG_NAME^^} }%_BUILDLINK3_MK:=
+
+BUILDLINK_API_DEPENDS.%{ ${PKG_NAME} }%+=	%{ ${PKG_NAME} }%>=0.1
+BUILDLINK_PKGSRCDIR.%{ ${PKG_NAME} }%?=	../../devel/%{ ${PKG_NAME} }%
+
+%     for PKG in ${!PRJ_RUNTIME_PKGS[@]}; do
+%         DPATH=$(pkg_info -Q PKGPATH $PKG)
+.include "../../%{ $DPATH }%/buildlink3.mk"
+%     done
+.endif	# %{ ${PKG_NAME^^} }%_BUILDLINK3_MK
+
+BUILDLINK_TREE+=	-%{ ${PKG_NAME} }%
+% fi
