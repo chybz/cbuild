@@ -823,7 +823,7 @@ function cb_configure_compiler() {
     local DEF_CXX=${CXX:-${CB_CXXS[$CPKG_OS]}$VER}
     local DEF_GCOV=${GCOV:-${CB_GCOVS[$CPKG_OS]}$VER}
 
-    cp_find_cmd CB_CPP $DEF_CPP
+    cp_find_cmd CB_CPP ${CB_CPPS[$CPKG_OS]}$VER
     cp_find_cmd CB_CC $DEF_CC
     cp_find_cmd CB_CXX $DEF_CXX
 
