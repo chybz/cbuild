@@ -187,24 +187,24 @@ export CB_CC_IS_CLANG=0
 
 # Default compiler commands
 declare -A CB_CPPS=(
-    [Linux]=cpp
-    [Darwin]=cpp
+    [Linux]=/usr/bin/cpp
+    [Darwin]=/usr/bin/cpp
 )
 declare -A CB_CCS=(
-    [Linux]=gcc
-    [Darwin]=clang
+    [Linux]=/usr/bin/gcc
+    [Darwin]=/usr/bin/clang
 )
 declare -A CB_CC_VERSIONS=(
     [Linux]=4.8
     [Darwin]=
 )
 declare -A CB_CXXS=(
-    [Linux]=g++
-    [Darwin]=clang++
+    [Linux]=/usr/bin/g++
+    [Darwin]=/usr/bin/clang++
 )
 declare -A CB_GCOVS=(
-    [Linux]=gcov
-    [Darwin]=gcov
+    [Linux]=/usr/bin/gcov
+    [Darwin]=/usr/bin/gcov
 )
 
 CB_EMPTY_DIR=$CB_STATE_DIR/empty-dir
@@ -818,12 +818,12 @@ function cb_configure_compiler() {
         VER=${VPRE}${VER}
     fi
 
-    cp_find_cmd CB_CPP ${CB_CPPS[$CPKG_OS]}$VER
-    cp_find_cmd CB_CC ${CB_CCS[$CPKG_OS]}$VER
-    cp_find_cmd CB_CXX ${CB_CXXS[$CPKG_OS]}$VER
+    CB_CPP=${CB_CPPS[$CPKG_OS]}$VER
+    CB_CC=${CB_CCS[$CPKG_OS]}$VER
+    CB_CXX=${CB_CXXS[$CPKG_OS]}$VER
 
     if ((${PRJ_OPTS[coverage]})); then
-        cp_find_cmd CB_GCOV ${CB_GCOVS[$CPKG_OS]}$VER
+        CB_GCOV=${CB_GCOVS[$CPKG_OS]}$VER
     fi
 
     [[ $CB_CC =~ gcc ]] && CB_CC_IS_GCC=1
@@ -1014,11 +1014,10 @@ function cb_scan_target_files() {
 
         # Get dependency info from compiler
         local DEPLINES=$(
-            $SCAN_CMD ${FILES[@]} 2>&1 | tee raw_scan.log | \
+            $SCAN_CMD ${FILES[@]} 2>&1 | \
             $CB_CPP -P | \
             cp_run_sed ${CLEAN_EXPRS[@]} | \
-            tr -s ' ' | \
-            tee scan.log
+            tr -s ' '
         )
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
