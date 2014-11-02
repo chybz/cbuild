@@ -262,7 +262,10 @@ function cb_load_autolink() {
     local RE
 
     for RE in ${!AUTOLINK[@]}; do
-        CB_AUTOLINK[$RE]=${AUTOLINK[$RE]}
+        # Resolve full package names
+        local -a SPEC=(${AUTOLINK[$RE]})
+        SPEC[1]=$(lp_full_pkg_name ${SPEC[1]})
+        CB_AUTOLINK[$RE]="${SPEC[@]}"
         CB_AUTOLINK_GROUP[$RE]=${GROUP^^}
     done
 }
@@ -891,10 +894,10 @@ function cb_autolink() {
             local -a SPEC=(${CB_AUTOLINK[$RE]})
             PC=${SPEC[0]}
 
-            if [[ "${CPKG_HEADER_MAP[$HEADER]}" ]]; then
-                PKG="${CPKG_HEADER_MAP[$HEADER]}"
-            elif ((${#SPEC[@]} > 1)); then
+            if ((${#SPEC[@]} > 1)); then
                 PKG=${SPEC[1]}
+            elif [[ "${CPKG_HEADER_MAP[$HEADER]}" ]]; then
+                PKG="${CPKG_HEADER_MAP[$HEADER]}"
             else
                 PKG=$PC
             fi
@@ -1024,10 +1027,7 @@ function cb_scan_target_files() {
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
 
-        local DEPLINE
-        local PKG
-        local DEP
-
+        local DEPLINE DEP PKG
         local OLD_IFS="$IFS"
         IFS=""
 
@@ -1155,11 +1155,11 @@ function cb_scan_target_files() {
                         if [[ ! "${SEEN_PKGDEPS[$PKG]}" ]]; then
                             PKGDEPS+=($PKG)
                             SEEN_PKGDEPS[$PKG]=1
-                        fi
 
-                        if (($IS_HEADER)); then
-                            # Runtime package dependency
-                            PRJ_RUNTIME_PKGS[$PKG]=1
+                            if (($IS_HEADER)); then
+                                # Runtime package dependency
+                                PRJ_RUNTIME_PKGS[$PKG]=1
+                            fi
                         fi
 
                         local PCDEP
