@@ -101,7 +101,7 @@ doc:
 package: build-project
 	@cd build && ( \
 		rm -rf usr etc && \
-		make DESTDIR=packaging install && \
+		make DESTDIR=packaging install | grep -v '^-- ' && \
 		cd packaging && dpkg-buildpackage -b -uc \
 	)
 % elif (($CPKG_IS_PKGSRC)); then
@@ -133,7 +133,7 @@ update-pkg: package
 % fi
 
 install:
-	@cd build && make DESTDIR=$(DESTDIR) install
+	@cd build && (make DESTDIR=$(DESTDIR) install | grep -v '^-- ')
 
 % if (($CPKG_IS_DEB)); then
 upload:

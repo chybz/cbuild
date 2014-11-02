@@ -1576,6 +1576,13 @@ function cb_configure() {
 
     cb_check_conf
 
+    export CB_PKGSRC_BUILD=0
+
+    if [[ -f $TOPDIR/../.extract_done ]]; then
+        # We're under pkgsrc build
+        CB_PKGSRC_BUILD=1
+    fi
+
     mkdir -p $PRJ_BUILDDIR/man
 
     ACTION="configure"
@@ -1588,4 +1595,9 @@ function cb_configure() {
     cb_configure_targets
     cb_run_generator
     STATUS=0
+
+    if (($CB_PKGSRC_BUILD)); then
+        # Avoid warnings about leftover files
+        cp_clear_home
+    fi
 }
