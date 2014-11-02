@@ -818,17 +818,12 @@ function cb_configure_compiler() {
         VER=${VPRE}${VER}
     fi
 
-    local DEF_CPP=${CPP:-${CB_CPPS[$CPKG_OS]}$VER}
-    local DEF_CC=${CC:-${CB_CCS[$CPKG_OS]}$VER}
-    local DEF_CXX=${CXX:-${CB_CXXS[$CPKG_OS]}$VER}
-    local DEF_GCOV=${GCOV:-${CB_GCOVS[$CPKG_OS]}$VER}
-
     cp_find_cmd CB_CPP ${CB_CPPS[$CPKG_OS]}$VER
-    cp_find_cmd CB_CC $DEF_CC
-    cp_find_cmd CB_CXX $DEF_CXX
+    cp_find_cmd CB_CC ${CB_CCS[$CPKG_OS]}$VER
+    cp_find_cmd CB_CXX ${CB_CXXS[$CPKG_OS]}$VER
 
     if ((${PRJ_OPTS[coverage]})); then
-        cp_find_cmd CB_GCOV $DEF_GCOV
+        cp_find_cmd CB_GCOV ${CB_GCOVS[$CPKG_OS]}$VER
     fi
 
     [[ $CB_CC =~ gcc ]] && CB_CC_IS_GCC=1
@@ -1022,7 +1017,8 @@ function cb_scan_target_files() {
             $SCAN_CMD ${FILES[@]} 2>&1 | \
             $CB_CPP -P | \
             cp_run_sed ${CLEAN_EXPRS[@]} | \
-            tr -s ' '
+            tr -s ' ' | \
+            tee scan.log
         )
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
