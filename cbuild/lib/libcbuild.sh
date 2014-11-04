@@ -162,6 +162,7 @@ fi
 
 PKG_NAME=${PRJ_NAME//_/-}
 PRJ_DEFPREFIX="${PRJ_NAME^^}_"
+PRJ_DEFPREFIX="${PRJ_DEFPREFIX//-/_}"
 
 . $(cpkg-config -L)
 
@@ -1258,8 +1259,6 @@ function cb_configure_target_include() {
 
     set +e
     local -a TARGET_INC=()
-    #     $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET
-    # )
 
     local INC
 
@@ -1303,6 +1302,7 @@ function cb_configure_target_link() {
         $TYPE $TARGET "TARGET_LINK" \
         $(cb_get_pc_list $TARGET ${PCFLAGS[@]})
 
+    local -A SEEN_MAP
     local -a LIBS
     local LIB
     local -a DEPS
@@ -1320,7 +1320,10 @@ function cb_configure_target_link() {
     done
 
     for LIB in $(cb_get_pc_list $TARGET "--libs-only-l" "-l"); do
-        LIBS+=($LIB)
+        if [[ ! "${SEEN_MAP[$LIB]}" ]]; then
+            LIBS+=($LIB)
+            SEEN_MAP[$LIB]=1
+        fi
     done
 
     cb_save_target_list \

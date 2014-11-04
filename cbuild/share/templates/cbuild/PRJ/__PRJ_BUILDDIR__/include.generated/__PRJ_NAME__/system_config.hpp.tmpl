@@ -1,6 +1,7 @@
 %# -*- mode: C++ -*-
 % PNAME=${PRJ_NAME^^}
 % PNAME=${PNAME//-/_}
+% NSNAME=${PRJ_NAME//-/_}
 #ifndef __%{ ${PNAME} }%_SYSTEM_CONFIG_H__
 #define __%{ ${PNAME} }%_SYSTEM_CONFIG_H__
 
@@ -24,7 +25,7 @@
 
 #include <%{ ${PRJ_NAME} }%/config.h>
 
-namespace %{ ${PRJ_NAME} }% {
+namespace %{ ${NSNAME} }% {
 
 class system_config {
 public:
@@ -224,6 +225,6 @@ private:
     directory_map directory_map_;
 };
 
-} // namespace %{ ${PRJ_NAME} }%
+} // namespace %{ ${NSNAME} }%
 
 #endif // __%{ ${PNAME} }%_SYSTEM_CONFIG_H__

@@ -1,0 +1,9 @@
+% if ((${PRJ_AUTOLINK["READLINE"]})); then
+Name: libreadline
+Description: Wrapper for readline library
+Version: 1
+Requires:
+Libs: -lreadline
+% else
+%     OPTS["process"]=0
+% fi

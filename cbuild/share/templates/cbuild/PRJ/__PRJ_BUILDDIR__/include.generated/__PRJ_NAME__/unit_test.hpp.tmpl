@@ -1,5 +1,6 @@
 % PNAME=${PRJ_NAME^^}
 % PNAME=${PNAME//-/_}
+% NSNAME=${PRJ_NAME//-/_}
 #ifndef __%{ ${PNAME} }%_UNIT_TEST_H__
 #define __%{ ${PNAME} }%_UNIT_TEST_H__
 
@@ -17,7 +18,7 @@ struct tap_config
         setenv("CB_TEST", "1", 1);
 
         boost::unit_test::unit_test_log.set_formatter(
-            new cbuild::%{ ${PRJ_NAME} }%::unit_test::tap_formatter
+            new cbuild::%{ ${NSNAME} }%::unit_test::tap_formatter
         );
         boost::unit_test::unit_test_log.set_threshold_level(
             boost::unit_test::log_successful_tests

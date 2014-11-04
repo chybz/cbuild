@@ -19,12 +19,13 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 % fi
 
 add_definitions(
-    -D%{ ${PRJ_NAME^^} }%_EXPORTS
+    -D%{ ${PRJ_DEFPREFIX} }%EXPORTS
     -D%{ ${CPKG_PF^^} }%
     -D%{ ${CPKG_OS^^} }%
 % if [[ ${PRJ_OPTS[stack_protector]} ]]; then
     -D_FORTIFY_SOURCE=2
 % fi
+    -DBOOST_ALL_DYN_LINK
 )
 
 include_directories(%{ "../build/$PRJ_GENINCNAME" }%)

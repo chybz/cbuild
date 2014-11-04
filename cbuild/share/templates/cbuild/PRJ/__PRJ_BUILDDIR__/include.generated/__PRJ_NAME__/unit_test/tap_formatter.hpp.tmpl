@@ -1,12 +1,13 @@
 % PNAME=${PRJ_NAME^^}
 % PNAME=${PNAME//-/_}
+% NSNAME=${PRJ_NAME//-/_}
 #ifndef __%{ ${PNAME} }%_UNIT_TEST_TAP_FORMATTER_H__
 #define __%{ ${PNAME} }%_UNIT_TEST_TAP_FORMATTER_H__
 
 #include <boost/test/unit_test_log_formatter.hpp>
 
 namespace cbuild {
-namespace %{ ${PRJ_NAME} }% {
+namespace %{ ${NSNAME} }% {
 namespace unit_test {
 
 namespace but = boost::unit_test;
@@ -148,7 +149,7 @@ private:
 };
 
 } // namespace unit_test
-} // namespace %{ ${PRJ_NAME} }%
+} // namespace %{ ${NSNAME} }%
 } // namespace cbuild
 
 #endif // __%{ ${PNAME} }%_UNIT_TEST_TAP_FORMATTER_H__
