@@ -12,7 +12,7 @@ set(CMAKE_MODULE_LINKER_FLAGS "%{ ${CB_LFLAGS[@]} }%")
 set(CMAKE_CXX_FLAGS "%{ ${CB_GEN_FLAGS[@]} }% %{ ${CB_CXXFLAGS[@]} }%")
 set(CMAKE_C_FLAGS "%{ ${CB_GEN_FLAGS[@]} }% %{ ${CB_CFLAGS[@]} }%")
 % if [[ $CPKG_DIST == "MacOSX" ]]; then
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_MACOSX_RPATH 1)
 % fi
 
 add_definitions(
