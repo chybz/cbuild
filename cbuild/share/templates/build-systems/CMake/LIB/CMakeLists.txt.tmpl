@@ -29,9 +29,6 @@ set_target_properties(
 % if ((${#CB_LIB_LFLAGS[*]})); then
     LINK_FLAGS "%{ ${CB_LIB_LFLAGS[@]} }%"
 % fi
-% if [[ $CPKG_DIST == "MacOSX" ]]; then
-    INSTALL_RPATH "@loader_path/../lib"
-% fi
     RUNTIME_OUTPUT_DIRECTORY ../../bin
     LIBRARY_OUTPUT_DIRECTORY ../../lib
     ARCHIVE_OUTPUT_DIRECTORY ../../lib
