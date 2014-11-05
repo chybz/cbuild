@@ -91,7 +91,9 @@ declare -A TARGET_HEADER_MAP
 declare -A TARGET_DEP_MAP
 declare -A TARGET_PKGDEP_MAP
 declare -A TARGET_PCDEP_MAP
+declare -A TARGET_RUNTIME_PCDEP_MAP
 declare -A TARGET_DEP_HIST
+declare -A TARGET_LIBDIRS
 declare -A HLIB_TARGET_MAP
 declare -A PLIB_TARGET_MAP
 declare -A NOT_FOUND_MAP
@@ -373,6 +375,23 @@ function cb_add_pc_deps() {
         fi
 
         cp_msg "$TYPE $TARGET => PC $DEP"
+    done
+}
+
+function cb_add_runtime_pc_deps() {
+    local TYPE=$1
+    local TARGET=$2
+    shift 2
+    local DEP
+
+    local TARGET_KEY="${TYPE}_${TARGET}"
+
+    for DEP in $@; do
+        if [[ "${TARGET_RUNTIME_PCDEP_MAP[$TARGET_KEY]}" ]]; then
+            TARGET_RUNTIME_PCDEP_MAP[$TARGET_KEY]+=" $DEP"
+        else
+            TARGET_RUNTIME_PCDEP_MAP[$TARGET_KEY]=$DEP
+        fi
     done
 }
 
@@ -976,6 +995,7 @@ function cb_scan_target_files() {
     local -a PKGDEPS
     local -A SEEN_PCDEPS
     local -a PCDEPS
+    local -a RUNTIME_PCDEPS
 
     # Build map of this target files
     for KEYFILE in ${HEADERS[@]} ${LOCAL_HEADERS[@]} ${SOURCES[@]}; do
@@ -1164,6 +1184,12 @@ function cb_scan_target_files() {
                             if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
                                 PCDEPS+=($PCDEP)
                                 SEEN_PCDEPS[$PCDEP]=1
+
+                                if (($IS_HEADER)); then
+                                    # Runtime pkg-config dependency on a
+                                    # locally generated pkg-config file
+                                    RUNTIME_PCDEPS+=($PCDEP)
+                                fi
                             fi
                         done
                     fi
@@ -1185,6 +1211,7 @@ function cb_scan_target_files() {
     cb_add_deps $TYPE $TARGET ${TDEPS[@]}
     cb_add_pkg_deps $TYPE $TARGET ${PKGDEPS[@]}
     cb_add_pc_deps $TYPE $TARGET ${PCDEPS[@]}
+    cb_add_runtime_pc_deps $TYPE $TARGET ${RUNTIME_PCDEPS[@]}
 
     cb_save_target_list $TYPE $TARGET "TARGET_PCDEPS" ${PCDEPS[@]}
 
@@ -1215,15 +1242,16 @@ function cb_scan_targets_files() {
 }
 
 function cb_get_pc_list() {
-    local TARGET=$1
-    local PCFLAG=$2
-    local STRIP=$3
-    local SKIP=$4
+    local PCFLAG=$1
+    local STRIP=$2
+    local SKIP=$3
+    shift 3
 
     local -a LIST
     local DEP
     local ITEMS
     local ITEM
+    local -A SEEN_ITEMS
 
     local PCPATH=$PRJ_BUILDDIR/pkgconfig.private:$PRJ_BUILDDIR/pkgconfig
 
@@ -1232,21 +1260,23 @@ function cb_get_pc_list() {
     fi
 
     local PKG_CONFIG_PATH=$PCPATH
-    local TARGET_KEY="${TYPE}_${TARGET}"
 
-    for DEP in ${TARGET_PCDEP_MAP[$TARGET_KEY]}; do
+    for DEP in $@; do
         ITEMS="$(lp_get_pkgconfig $DEP "$PCFLAG")"
         ITEMS=${ITEMS//$STRIP}
         ITEMS=${ITEMS## }
         ITEMS=${ITEMS%% }
 
         for ITEM in $ITEMS; do
-            if [[ "$SKIP" && $ITEM == $SKIP ]]; then
+            if [[ -n "$SKIP" && $ITEM == $SKIP ]]; then
                 # Already configured by compiler
                 continue
             fi
 
-            LIST+=($ITEM)
+            if [[ ! "${SEEN_ITEMS[$ITEM]}" ]]; then
+                LIST+=($ITEM)
+                SEEN_ITEMS[$ITEM]=1
+            fi
         done
     done
 
@@ -1281,9 +1311,10 @@ function cb_configure_target_include() {
     done
 
     local PCFLAGS=("--cflags-only-I" "-I" $CPKG_PREFIX/include)
+    local PCS="${TARGET_PCDEP_MAP[$TARGET_KEY]}"
 
     # Include directories of pkg-config dependencies
-    for INC in $(cb_get_pc_list $TARGET ${PCFLAGS[@]}); do
+    for INC in $(cb_get_pc_list ${PCFLAGS[@]} $PCS); do
         TARGET_INC+=($INC)
     done
 
@@ -1296,11 +1327,14 @@ function cb_configure_target_link() {
     local TYPE=$1
     local TARGET=$2
 
+    local TARGET_KEY="${TYPE}_${TARGET}"
+
     local PCFLAGS=("--libs-only-L" "-L" $CPKG_PREFIX/lib)
+    local PCS="${TARGET_PCDEP_MAP[$TARGET_KEY]}"
 
     cb_save_target_list \
         $TYPE $TARGET "TARGET_LINK" \
-        $(cb_get_pc_list $TARGET ${PCFLAGS[@]})
+        $(cb_get_pc_list ${PCFLAGS[@]} $PCS)
 
     local -A SEEN_MAP
     local -a LIBS
@@ -1319,7 +1353,9 @@ function cb_configure_target_link() {
         fi
     done
 
-    for LIB in $(cb_get_pc_list $TARGET "--libs-only-l" "-l"); do
+    local PCS="${TARGET_PCDEP_MAP[$TARGET_KEY]}"
+
+    for LIB in $(cb_get_pc_list "--libs-only-l" "-l" "" $PCS); do
         if [[ ! "${SEEN_MAP[$LIB]}" ]]; then
             LIBS+=($LIB)
             SEEN_MAP[$LIB]=1
@@ -1335,6 +1371,20 @@ function cb_configure_target_link() {
         ${DEPS[@]}
 }
 
+function cb_configure_target_pkgconfig() {
+    local TYPE=$1
+    local TARGET=$2
+
+    local TARGET_KEY="${TYPE}_${TARGET}"
+    local PCS="${TARGET_RUNTIME_PCDEP_MAP[$TARGET_KEY]}"
+
+    cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_PC_CFLAGS" \
+        "$(cb_get_pc_list "--cflags" "" $CPKG_PREFIX/include $PCS)"
+
+    cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_PC_LIBS" \
+        "$(cb_get_pc_list "--libs" "" $CPKG_PREFIX/lib $PCS)"
+}
+
 function cb_configure_target() {
     local TYPE=$1
     local TARGET=$2
@@ -1347,6 +1397,8 @@ function cb_configure_target() {
         $(cb_get_target_output_name $TYPE $TARGET)
     cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_BUILD_NAME" \
         $(cb_get_target_build_name $TYPE $TARGET)
+
+    cb_configure_target_pkgconfig $TYPE $TARGET
 
     CPKG_TMPL_PRE=($CB_STATE_DIR/PRJ/CCVARS)
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/OPTS)

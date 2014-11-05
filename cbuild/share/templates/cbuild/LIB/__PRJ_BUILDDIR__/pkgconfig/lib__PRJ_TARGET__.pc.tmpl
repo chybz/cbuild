@@ -37,10 +37,10 @@ Requires: %{ $(cp_join " " ${REQS[@]}) }%
 %     fi
 %
 %     if ((${#LNK[@]})); then
-Libs: %{ $(cp_join " " ${LNK[@]}) }%
+Libs: %{ ${TARGET_PC_LIBS:+"$TARGET_PC_LIBS "} }%%{ $(cp_join " " ${LNK[@]}) }%
 %     else
 Libs:
 %     fi
 %
-Cflags: -I${includedir}
+Cflags: -I${includedir}%{ ${TARGET_PC_CFLAGS:+" $TARGET_PC_CFLAGS"} }%
 % fi
