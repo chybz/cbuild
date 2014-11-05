@@ -988,6 +988,7 @@ function cb_scan_target_files() {
     local FDEP
     local KEYFILE
     local -a CLEAN_EXPRS
+    local -A RESOLVED_MAP
     local -A TARGET_MAP
     local -A SEEN_TDEPS
     local -a TDEPS
@@ -1184,12 +1185,12 @@ function cb_scan_target_files() {
                             if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
                                 PCDEPS+=($PCDEP)
                                 SEEN_PCDEPS[$PCDEP]=1
+                            fi
 
-                                if (($IS_HEADER)); then
-                                    # Runtime pkg-config dependency on a
-                                    # locally generated pkg-config file
-                                    RUNTIME_PCDEPS+=($PCDEP)
-                                fi
+                            if (($IS_HEADER)); then
+                                # Runtime pkg-config dependency on a
+                                # locally generated pkg-config file
+                                RUNTIME_PCDEPS+=($PCDEP)
                             fi
                         done
                     fi
@@ -1376,13 +1377,24 @@ function cb_configure_target_pkgconfig() {
     local TARGET=$2
 
     local TARGET_KEY="${TYPE}_${TARGET}"
-    local PCS="${TARGET_RUNTIME_PCDEP_MAP[$TARGET_KEY]}"
+    local -a PCS
+    local -A SEEN_PCS
+    local PC
+
+    for PC in ${TARGET_RUNTIME_PCDEP_MAP[$TARGET_KEY]}; do
+        if ((${PRJ_LOCAL_PKGCONFIGS[$PC]})); then
+            if [[ ! "${SEEN_PCS[$PC]}" ]]; then
+                PCS+=($PC)
+                SEEN_PCS[$PC]=1
+            fi
+        fi
+    done
 
     cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_PC_CFLAGS" \
-        "$(cb_get_pc_list "--cflags" "" $CPKG_PREFIX/include $PCS)"
+        "$(cb_get_pc_list "--cflags" "" $CPKG_PREFIX/include ${PCS[@]})"
 
     cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_PC_LIBS" \
-        "$(cb_get_pc_list "--libs" "" $CPKG_PREFIX/lib $PCS)"
+        "$(cb_get_pc_list "--libs" "" $CPKG_PREFIX/lib ${PCS[@]})"
 }
 
 function cb_configure_target() {

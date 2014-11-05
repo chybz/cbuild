@@ -37,7 +37,7 @@ Requires: %{ $(cp_join " " ${REQS[@]}) }%
 %     fi
 %
 %     if ((${#LNK[@]})); then
-Libs: %{ ${TARGET_PC_LIBS:+"$TARGET_PC_LIBS "} }%%{ $(cp_join " " ${LNK[@]}) }%
+Libs: %{ $(cp_join " " ${LNK[@]}) }%%{ ${TARGET_PC_LIBS:+" $TARGET_PC_LIBS"} }%
 %     else
 Libs:
 %     fi

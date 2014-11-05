@@ -1,3 +1,6 @@
+% if [[ $CPKG_OS == "Linux" ]]; then
+MAKEFLAGS=--no-print-directory
+% fi
 PROJECT_NAME=%{ $PRJ_NAME }%
 PROJECT_VERSION=%{ $PKG_VER }%
 PACKAGE_NAME=%{ $PKG_NAME }%
