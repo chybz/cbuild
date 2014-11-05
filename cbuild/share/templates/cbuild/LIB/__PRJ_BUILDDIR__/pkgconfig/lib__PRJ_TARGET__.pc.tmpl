@@ -27,17 +27,26 @@ Requires: %{ $(cp_join " " ${REQS[@]}) }%
 %     fi
 %
 %     LNK=()
+%     declare -A LNK_MAP
 %
 %     if ((${#SOURCES} > 0)); then
-%         LNK+=("-L\${libdir} -l${TARGET_OUTPUT_NAME}")
+%         LNK+=("-L\${libdir}" "-l${TARGET_OUTPUT_NAME}")
+%         LNK_MAP["-l${TARGET_OUTPUT_NAME}"]=1
 %     else
 %         for LIB in ${TARGET_LIBS[@]}; do
 %             LNK+=("-l$LIB")
+%             LNK_MAP["-l$LIB"]=1
 %         done
 %     fi
 %
+%     for LIB in ${TARGET_PC_LIBS}; do
+%         if [[ ! "${LNK_MAP[$LIB]}" ]]; then
+%             LNK+=($LIB)
+%         fi
+%     done
+%
 %     if ((${#LNK[@]})); then
-Libs: %{ $(cp_join " " ${LNK[@]}) }%%{ ${TARGET_PC_LIBS:+" $TARGET_PC_LIBS"} }%
+Libs: %{ $(cp_join " " ${LNK[@]}) }%
 %     else
 Libs:
 %     fi
