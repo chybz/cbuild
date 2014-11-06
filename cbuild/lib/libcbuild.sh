@@ -197,10 +197,6 @@ declare -A CB_CCS=(
     [Linux]=/usr/bin/gcc
     [Darwin]=/usr/bin/clang
 )
-declare -A CB_CC_VERSIONS=(
-    [Linux]=4.8
-    [Darwin]=
-)
 declare -A CB_CXXS=(
     [Linux]=/usr/bin/g++
     [Darwin]=/usr/bin/clang++
@@ -824,26 +820,12 @@ function cb_configure_compiler_flags() {
 }
 
 function cb_configure_compiler() {
-    local VER=${CB_CC_VERSIONS[$CPKG_OS]}
-
-    if [[ "$VER" ]]; then
-        local VPRE
-
-        case $CPKG_OS in
-            Linux)
-            VPRE="-"
-            ;;
-        esac
-
-        VER=${VPRE}${VER}
-    fi
-
-    CB_CPP=${CB_CPPS[$CPKG_OS]}$VER
-    CB_CC=${CB_CCS[$CPKG_OS]}$VER
-    CB_CXX=${CB_CXXS[$CPKG_OS]}$VER
+    CB_CPP=${CB_CPPS[$CPKG_OS]}
+    CB_CC=${CB_CCS[$CPKG_OS]}
+    CB_CXX=${CB_CXXS[$CPKG_OS]}
 
     if ((${PRJ_OPTS[coverage]})); then
-        CB_GCOV=${CB_GCOVS[$CPKG_OS]}$VER
+        CB_GCOV=${CB_GCOVS[$CPKG_OS]}
     fi
 
     [[ $CB_CC =~ gcc ]] && CB_CC_IS_GCC=1
@@ -911,8 +893,8 @@ function cb_autolink() {
 
             if ((${#SPEC[@]} > 1)); then
                 PKG=${SPEC[1]}
-            elif [[ "${CPKG_HEADER_MAP[$HEADER]}" ]]; then
-                PKG="${CPKG_HEADER_MAP[$HEADER]}"
+            elif [[ "$(lp_pkg_from_header $HEADER)" ]]; then
+                PKG="$(lp_pkg_from_header $HEADER)"
             else
                 PKG=$PC
             fi
@@ -930,7 +912,7 @@ function cb_install_pkg() {
     local FDEP=$3
     local PKG=$4
 
-    if [[ ! "${CPKG_PKG_MAP[$PKG]}" ]]; then
+    if ! lp_is_pkg_installed $PKG; then
         local LABEL="Target $TYPE $TARGET depends on header '$FDEP'"
         LABEL+=", but it was not found on this system.\n\n"
         LABEL+="We suggest you install the following package:\n\n"
@@ -1017,8 +999,9 @@ function cb_scan_target_files() {
         CLEAN_EXPRS+=("-e s,[^[:space:]]+/.buildlink/include/,,g")
     fi
 
-    CLEAN_EXPRS+=("-e s,CBUILD_SOURCE:[[:space:]],,g")
+    CLEAN_EXPRS+=("-e s,CBUILD_SOURCE:[[:space:]]([^[:space:]]+[[:space:]])?,,g")
     CLEAN_EXPRS+=("-e /^$/d")
+    CLEAN_EXPRS+=("-e" 's,[[:space:]]+,\n,g')
 
     # Scan all of this target files
     for KIND in SOURCES HEADERS; do
@@ -1035,178 +1018,149 @@ function cb_scan_target_files() {
         cd $DIR
 
         # Get dependency info from compiler
-        local DEPLINES=$(
+        local ALLDEPS=$(
             $SCAN_CMD ${FILES[@]} 2>&1 | \
             $CB_CPP -P | \
             cp_run_sed ${CLEAN_EXPRS[@]} | \
-            tr -s ' '
+            sort | uniq | xargs
         )
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
 
-        local DEPLINE DEP PKG
-        local OLD_IFS="$IFS"
-        IFS=""
+        local DEPLINE DEP FDEP PKG
+        local IS_HEADER IS_SOURCE
 
-        # Read and clean dependencies
-        while read DEPLINE; do
-            IFS="$OLD_IFS"
-            read -a FDEPS <<<$DEPLINE
+        if [[ $KIND == "HEADERS" ]]; then
+            IS_HEADER=1
+            IS_SOURCE=0
+        elif [[ $KIND == "SOURCES" ]]; then
+            IS_HEADER=0
+            IS_SOURCE=1
+        fi
 
-            if ((!${#FDEPS[@]})); then
-                # No dependencies
-                IFS=""
+        # Read and process dependencies
+        for FDEP in $ALLDEPS; do
+            if ! [[ $FDEP =~ $CB_HDR_RE ]]; then
+                # Ignore unrecognized headers
                 continue
             fi
 
-            # First element is target file (source or header)
-            KEYFILE=${FDEPS[0]}
+            if [[ "${STD_HEADERS[$FDEP]}" || "${TARGET_MAP[$FDEP]}" ]]; then
+                # Ignore system/this target headers
+                # Look for additional autolink rules
+                local -a AUTOLINK=($(cb_autolink $FDEP))
 
-            local IS_HEADER IS_SOURCE
+                if ((${#AUTOLINK[@]} > 0)); then
+                    local PCDEP=(${AUTOLINK[0]})
+                    PRJ_AUTOLINK[${AUTOLINK[2]}]=1
 
-            if [[ $KEYFILE =~ $CB_HDR_RE ]]; then
-                IS_HEADER=1
-                IS_SOURCE=0
-            elif [[ $KEYFILE =~ $CB_SRC_RE ]]; then
-                IS_HEADER=0
-                IS_SOURCE=1
+                    if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
+                        PCDEPS+=($PCDEP)
+                        SEEN_PCDEPS[$PCDEP]=1
+                    fi
+                fi
+
+                continue
             fi
 
-            # Rest is dependencies
-            FDEPS=(${FDEPS[@]:1})
+            # Find other LIB target owning this header
+            local LIB_TARGET
+            local FOUND=0
 
-            for FDEP in ${FDEPS[@]}; do
-                if ! [[ $FDEP =~ $CB_HDR_RE ]]; then
-                    # Ignore unrecognized headers
-                    continue
+            for LIB_TARGET in ${LIB_TARGETS[@]}; do
+                if [[ "${TARGET_HEADER_MAP[$FDEP]}" == $LIB_TARGET ]]; then
+                    FOUND=$(($FOUND + 1))
+
+                    # This target depends on one of this project libraries
+                    if [[ ! "${SEEN_TDEPS[$LIB_TARGET]}" ]]; then
+                        TDEPS+=($LIB_TARGET)
+                        SEEN_TDEPS[$LIB_TARGET]=1
+
+                        if [[ ! "${PLIB_TARGET_MAP[$LIB_TARGET]}" ]]; then
+                            # Use library pkgconfig file ...
+                            PCDEPS+=("lib$LIB_TARGET")
+                            SEEN_PCDEPS["lib$LIB_TARGET"]=1
+
+                            # ... and ignore everything obtained though it
+                            # pkgconfigs first ...
+                            for DEP in ${TARGET_PCDEP_MAP["LIB_$LIB_TARGET"]}; do
+                                SEEN_PCDEPS[$DEP]=1
+                            done
+
+                            # ... packages next
+                            for DEP in ${TARGET_PKGDEP_MAP["LIB_$LIB_TARGET"]}; do
+                                SEEN_PKGDEPS[$DEP]=1
+                            done
+                        fi
+                    fi
                 fi
+            done
 
-                if [[ "${NOT_FOUND_MAP[$FDEP]}" ]]; then
-                    # Ignore already unknown headers
-                    continue
-                fi
+            if [[ !$FOUND && -f $PRJ_GENINCDIR/$FDEP ]]; then
+                # Ignore generated headers
+                continue
+            fi
 
-                if [[ "${STD_HEADERS[$FDEP]}" || "${TARGET_MAP[$FDEP]}" ]]; then
-                    # Ignore system/this target headers
-                    # Look for additional autolink rules
-                    local -a AUTOLINK=($(cb_autolink $FDEP))
+            if ((!$FOUND)); then
+                # No project target owns FDEP
+                # look in (installed) system packages
+                if [[ "$(lp_pkg_from_header $FDEP)" ]]; then
+                    FOUND=$(($FOUND + 1))
+                    PKG=$(lp_pkg_from_header $FDEP)
 
-                    if ((${#AUTOLINK[@]} > 0)); then
-                        local PCDEP=(${AUTOLINK[0]})
-                        PRJ_AUTOLINK[${AUTOLINK[2]}]=1
+                    # Ensure package is installed
+                    cb_install_pkg $TYPE $TARGET $FDEP $PKG
+                    cb_autolink_install_pkg $TYPE $TARGET $FDEP
 
+                    local -a TPCDEPS
+
+                    if [[ "$(lp_pkg_pkgconfigs $PKG)" ]]; then
+                        # System package has pkg-config info
+                        TPCDEPS=($(lp_pkg_pkgconfigs $PKG))
+                    else
+                        # Look in autolink rules
+                        local -a AUTOLINK=($(cb_autolink $FDEP))
+
+                        if ((${#AUTOLINK[@]} > 0)); then
+                            TPCDEPS+=(${AUTOLINK[0]})
+                            PKG=${AUTOLINK[1]}
+                            PRJ_AUTOLINK[${AUTOLINK[2]}]=1
+                        fi
+                    fi
+
+                    if [[ ! "${SEEN_PKGDEPS[$PKG]}" ]]; then
+                        PKGDEPS+=($PKG)
+                        SEEN_PKGDEPS[$PKG]=1
+
+                        if (($IS_HEADER)); then
+                            # Runtime package dependency
+                            PRJ_RUNTIME_PKGS[$PKG]=1
+                        fi
+                    fi
+
+                    local PCDEP
+
+                    for PCDEP in ${TPCDEPS[@]}; do
                         if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
                             PCDEPS+=($PCDEP)
                             SEEN_PCDEPS[$PCDEP]=1
                         fi
-                    fi
 
-                    continue
-                fi
-
-                # Find other LIB target owning this header
-                local LIB_TARGET
-                local FOUND=0
-
-                for LIB_TARGET in ${LIB_TARGETS[@]}; do
-                    if [[ "${TARGET_HEADER_MAP[$FDEP]}" == $LIB_TARGET ]]; then
-                        FOUND=$(($FOUND + 1))
-
-                        # This target depends on one of this project libraries
-                        if [[ ! "${SEEN_TDEPS[$LIB_TARGET]}" ]]; then
-                            TDEPS+=($LIB_TARGET)
-                            SEEN_TDEPS[$LIB_TARGET]=1
-
-                            if [[ ! "${PLIB_TARGET_MAP[$LIB_TARGET]}" ]]; then
-                                # Use library pkgconfig file ...
-                                PCDEPS+=("lib$LIB_TARGET")
-                                SEEN_PCDEPS["lib$LIB_TARGET"]=1
-
-                                # ... and ignore everything obtained though it
-                                # pkgconfigs first ...
-                                for DEP in ${TARGET_PCDEP_MAP["LIB_$LIB_TARGET"]}; do
-                                    SEEN_PCDEPS[$DEP]=1
-                                done
-
-                                # ... packages next
-                                for DEP in ${TARGET_PKGDEP_MAP["LIB_$LIB_TARGET"]}; do
-                                    SEEN_PKGDEPS[$DEP]=1
-                                done
-                            fi
+                        if (($IS_HEADER)); then
+                            # Runtime pkg-config dependency on a
+                            # locally generated pkg-config file
+                            RUNTIME_PCDEPS+=($PCDEP)
                         fi
-                    fi
-                done
-
-                if [[ !$FOUND && -f $PRJ_GENINCDIR/$FDEP ]]; then
-                    # Ignore generated headers
-                    continue
+                    done
                 fi
+            fi
 
-                if ((!$FOUND)); then
-                    # No project target owns FDEP
-                    # look in (installed) system packages
-                    if [[ "${CPKG_HEADER_MAP[$FDEP]}" ]]; then
-                        FOUND=$(($FOUND + 1))
-                        PKG=${CPKG_HEADER_MAP[$FDEP]}
-
-                        # Ensure package is installed
-                        cb_install_pkg $TYPE $TARGET $FDEP $PKG
-                        cb_autolink_install_pkg $TYPE $TARGET $FDEP
-
-                        local -a TPCDEPS
-
-                        if [[ "${CPKG_PKGCONFIG_MAP[$PKG]}" ]]; then
-                            # System package has pkg-config info
-                            TPCDEPS=(${CPKG_PKGCONFIG_MAP[$PKG]})
-                        else
-                            # Look in autolink rules
-                            local -a AUTOLINK=($(cb_autolink $FDEP))
-
-                            if ((${#AUTOLINK[@]} > 0)); then
-                                TPCDEPS+=(${AUTOLINK[0]})
-                                PKG=${AUTOLINK[1]}
-                                PRJ_AUTOLINK[${AUTOLINK[2]}]=1
-                            fi
-                        fi
-
-                        if [[ ! "${SEEN_PKGDEPS[$PKG]}" ]]; then
-                            PKGDEPS+=($PKG)
-                            SEEN_PKGDEPS[$PKG]=1
-
-                            if (($IS_HEADER)); then
-                                # Runtime package dependency
-                                PRJ_RUNTIME_PKGS[$PKG]=1
-                            fi
-                        fi
-
-                        local PCDEP
-
-                        for PCDEP in ${TPCDEPS[@]}; do
-                            if [[ ! "${SEEN_PCDEPS[$PCDEP]}" ]]; then
-                                PCDEPS+=($PCDEP)
-                                SEEN_PCDEPS[$PCDEP]=1
-                            fi
-
-                            if (($IS_HEADER)); then
-                                # Runtime pkg-config dependency on a
-                                # locally generated pkg-config file
-                                RUNTIME_PCDEPS+=($PCDEP)
-                            fi
-                        done
-                    fi
-                fi
-
-                if ((!$NEED_RESCAN && !$FOUND)); then
-                    cp_warning \
-                        "no target found for '$FDEP' ($TYPE $TARGET $KEYFILE)"
-                    NOT_FOUND_MAP[$FDEP]=1
-                fi
-            done
-
-            IFS=""
-        done <<<$DEPLINES
-
-        IFS="$OLD_IFS"
+            if ((!$NEED_RESCAN && !$FOUND)); then
+                cp_warning \
+                    "no target found for '$FDEP' ($TYPE $TARGET)"
+                NOT_FOUND_MAP[$FDEP]=1
+            fi
+        done
     done
 
     cb_add_deps $TYPE $TARGET ${TDEPS[@]}
@@ -1289,7 +1243,7 @@ function cb_configure_target_include() {
     local TARGET=$2
 
     set +e
-    local -a TARGET_INC=()
+    local -a TARGET_INC=(../../${TYPE_DIRS[$TYPE]}/$TARGET)
 
     local INC
 
