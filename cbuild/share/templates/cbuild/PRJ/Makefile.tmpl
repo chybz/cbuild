@@ -140,14 +140,11 @@ install:
 
 % if (($CPKG_IS_DEB)); then
 upload:
-	@cd DEBS && erepo-upload
+	@cd build && erepo-upload
 % fi
 
 clean:
-	@rm -rf build
-% if (($CPKG_IS_DEB)); then
-	@rm -f DEBS/$(PACKAGE_NAME)*
-% fi
+	@cd build && make clean
 
 distclean: clean
-	@rm -rf .cbuild
+	@rm -rf build .cbuild Makefile
