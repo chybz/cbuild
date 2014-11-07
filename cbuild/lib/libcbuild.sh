@@ -207,6 +207,7 @@ declare -A CB_GCOVS=(
 )
 
 CB_EMPTY_DIR=$CB_STATE_DIR/empty-dir
+CB_LOG_DIR=$CB_STATE_DIR/log
 
 CB_COMMON_SCAN_ARGS="-x c++ -M -MG -MT CBUILD_SOURCE"
 CB_COMMON_SCAN_ARGS+=" -nostdinc -nostdinc++"
@@ -868,7 +869,8 @@ function cb_make_scan_cmd() {
         CMD+=" -w"
     fi
 
-    [ ! -d $CB_EMPTY_DIR ] && mkdir -p $CB_EMPTY_DIR
+    mkdir -p $CB_EMPTY_DIR
+    mkdir -p $CB_LOG_DIR
 
     local INCDIR
 
@@ -1001,7 +1003,6 @@ function cb_scan_target_files() {
 
     CLEAN_EXPRS+=("-e s,CBUILD_SOURCE:[[:space:]]([^[:space:]]+[[:space:]])?,,g")
     CLEAN_EXPRS+=("-e /^$/d")
-    CLEAN_EXPRS+=("-e" 's,[[:space:]]+,\n,g')
 
     # Scan all of this target files
     for KIND in SOURCES HEADERS; do
@@ -1019,11 +1020,14 @@ function cb_scan_target_files() {
 
         # Get dependency info from compiler
         local ALLDEPS=$(
-            $SCAN_CMD ${FILES[@]} 2>&1 | \
+            $SCAN_CMD ${FILES[@]} 2>$CB_LOG_DIR/scan.log | \
             $CB_CPP -P | \
             cp_run_sed ${CLEAN_EXPRS[@]} | \
+            tr -s ' ' | tr ' ' '\n' | \
             sort | uniq | xargs
         )
+
+        [[ ! -s $CB_LOG_DIR/scan.log ]] || cat $CB_LOG_DIR/scan.log
 
         [[ $? == 0 ]] || cp_error "scan failed, aborting"
 
