@@ -96,6 +96,7 @@ declare -A TARGET_DEP_HIST
 declare -A TARGET_LIBDIRS
 declare -A HLIB_TARGET_MAP
 declare -A PLIB_TARGET_MAP
+declare -A NOINST_TARGET_MAP
 declare -A NOT_FOUND_MAP
 declare -A STD_HEADERS
 declare -a PRJ_HEADER_DIRS
@@ -1367,6 +1368,10 @@ function cb_configure_target() {
         $(cb_get_target_output_name $TYPE $TARGET)
     cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_BUILD_NAME" \
         $(cb_get_target_build_name $TYPE $TARGET)
+
+    if [[ -e $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET/.cbuild_noinst ]]; then
+        cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_NOINST" 1
+    fi
 
     cb_configure_target_pkgconfig $TYPE $TARGET
 

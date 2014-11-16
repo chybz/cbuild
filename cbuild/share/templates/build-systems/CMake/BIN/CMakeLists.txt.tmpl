@@ -49,8 +49,10 @@ add_dependencies(
     %{ $LIST }%
 )
 % fi
+% if [[ -z "$TARGET_NOINST" ]]; then
 
 install(
     TARGETS %{ $TARGET_BUILD_NAME }%
     RUNTIME DESTINATION bin
 )
+% fi
