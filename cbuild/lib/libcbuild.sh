@@ -1531,6 +1531,8 @@ function cb_configure_targets() {
         $SHAREDIR/templates/build-systems/CMake/PRJ \
         $PRJ_SRCDIR
 
+    cp_process_templates $SHAREDIR/templates/cbuild/PRJ_MK
+
     CPKG_TMPL_VARS="$OLD_TMPL_VARS"
 
     for TYPE in $CB_SCAN_ORDER; do
