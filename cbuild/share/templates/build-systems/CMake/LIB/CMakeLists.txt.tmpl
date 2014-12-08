@@ -26,6 +26,9 @@ add_library(
 set_target_properties(
     %{ $TARGET_BUILD_NAME }%
     PROPERTIES
+% if ((!${PRJ_OPTS["auto_export"]})); then
+    COMPILE_FLAGS "-fvisibility=hidden"
+% fi
 % if ((${#CB_LIB_LFLAGS[*]})); then
     LINK_FLAGS "%{ ${CB_LIB_LFLAGS[@]} }%"
 % fi

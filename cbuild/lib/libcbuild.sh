@@ -225,6 +225,7 @@ CB_SCAN_ORDER="LIB PLUG BIN TST"
 declare -a CB_GEN_FLAGS
 declare -a CB_LFLAGS
 declare -a CB_BIN_LFLAGS
+declare -a CB_LIB_CFLAGS
 declare -a CB_LIB_LFLAGS
 declare -a CB_CFLAGS
 declare -a CB_CXXFLAGS
@@ -760,7 +761,10 @@ function cb_configure_compiler_flags() {
 
     CB_GEN_FLAGS+=("-pipe" "-Wall")
 
-    [[ ${PRJ_OPTS[auto_export]} ]] || CB_GEN_FLAGS+=("-fvisibility=hidden")
+    if [[ -z "${PRJ_OPTS[auto_export]}" ]]; then
+        CB_LIB_CFLAGS+=("-fvisibility=hidden" "-fvisibility-inlines-hidden")
+    fi
+
     [[ ${PRJ_OPTS[ide]} ]] && CB_GEN_FLAGS+=("-fmessage-length=0")
 
     CB_CXXFLAGS+=("-ftemplate-depth=256")
@@ -840,6 +844,7 @@ function cb_configure_compiler() {
     cp_save_list "CB_GEN_FLAGS" $CCVARS ${CB_GEN_FLAGS[@]}
     cp_save_list "CB_LFLAGS" "+$CCVARS" ${CB_LFLAGS[@]}
     cp_save_list "CB_BIN_LFLAGS" "+$CCVARS" ${CB_BIN_LFLAGS[@]}
+    cp_save_list "CB_LIB_CFLAGS" "+$CCVARS" ${CB_LIB_CFLAGS[@]}
     cp_save_list "CB_LIB_LFLAGS" "+$CCVARS" ${CB_LIB_LFLAGS[@]}
     cp_save_list "CB_CFLAGS" "+$CCVARS" ${CB_CFLAGS[@]}
     cp_save_list "CB_CXXFLAGS" "+$CCVARS" ${CB_CXXFLAGS[@]}
