@@ -1263,9 +1263,6 @@ function cb_configure_target_include() {
     INC=$PRJ_SRCDIR/${TYPE_DIRS[INC]}.private/$TARGET
     [ -d $INC ] && TARGET_INC+=(../../${TYPE_DIRS[INC]}.private/$TARGET)
 
-    INC=$PRJ_BUILDDIR/${TYPE_DIRS[INC]}.generated
-    [ -d $INC ] && TARGET_INC+=(../../../build/${TYPE_DIRS[INC]}.generated)
-
     local DEP
     local TARGET_KEY="${TYPE}_${TARGET}"
 
