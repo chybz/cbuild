@@ -1,0 +1,9 @@
+% if ((${PRJ_AUTOLINK["PCAP"]})); then
+Name: libpcap
+Description: Wrapper for OS specific pcap
+Version: 1
+Requires:
+Libs: -lpcap
+% else
+%     OPTS["process"]=0
+% fi
