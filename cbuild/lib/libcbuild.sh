@@ -478,6 +478,22 @@ function cb_save_target_var() {
     echo "$VAR=\"$@\"" >> $FILE
 }
 
+function cb_set_noinst() {
+    local NAME=$1
+
+    ((${NOINST_TARGET_MAP[$NAME]})) && return 0
+
+    NOINST_TARGET_MAP[$NAME]=0
+
+    local SRCDIR=$PRJ_SRCDIR/${TYPE_DIRS[BIN]}/$NAME
+    local HDRDIR=$PRJ_SRCDIR/${TYPE_DIRS[INC]}/$NAME
+
+    [[ -d $SRCDIR && -f $SRCDIR/.cbuild_noinst ]] && NOINST_TARGET_MAP[$NAME]=1
+    [[ -d $HDRDIR && -f $HDRDIR/.cbuild_noinst ]] && NOINST_TARGET_MAP[$NAME]=1
+
+    return 0
+}
+
 function cb_set_is_private_lib() {
     local NAME=$1
 
@@ -518,6 +534,8 @@ function cb_scan_target() {
     local SOURCE SOURCEFILE
 
     if [ $TYPE = "BIN" ]; then
+        cb_set_noinst $NAME
+
         if grep \
             -REq \
             "^\s*//\s*cbuild-service:\s*yes\s*$" \
@@ -1469,6 +1487,10 @@ function cb_configure_targets() {
     # Create map of private libraries
     cp_save_hash "PLIB_TARGET_MAP" $CB_STATE_DIR/PRJ/PLIBS
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PLIBS)
+
+    # Create map of binaries not to install
+    cp_save_hash "NOINST_TARGET_MAP" $CB_STATE_DIR/PRJ/NOINST
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/NOINST)
 
     local TYPE
 

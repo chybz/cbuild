@@ -3,6 +3,9 @@ OPTS["process"]=$((${PRJ_HAS["BIN_ONLY"]}))
 %{/Bash}%
 % if ((${OPTS["process"]})); then
 %     for BIN in ${PRJ_BINS_ONLY[@]}; do
+%         if ((${NOINST_TARGET_MAP[$BIN]})); then
+%             continue
+%         fi
 usr/bin/%{ ${BIN} }%
 usr/share/man/man1/%{ ${BIN} }%.1
 %     done
