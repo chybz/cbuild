@@ -65,14 +65,20 @@ Description: libraries debug symbols
  .
 % fi
 % if ((${PRJ_HAS["LIB"]})); then
-
+%     DEV_DEPS=""
+%
+%     if ((${#PRJ_PKGS[*]})); then
+%         for DEP in ${!PRJ_PKGS[@]}; do
+%             DEV_DEPS+=", $DEP"
+%         done
+%     fi
 Package: lib%{ ${PKG_NAME} }%-dev
 Section: libdevel
 Architecture: all
 %     if ((${PRJ_HAS["BIN_LIB"]})); then
-Depends: ${misc:Depends}, lib%{ ${PKG_NAME} }% (= ${binary:Version})
+Depends: ${misc:Depends}, lib%{ ${PKG_NAME} }% (= ${binary:Version})%{ ${DEV_DEPS} }%
 %     else
-Depends: ${misc:Depends}%{ ${dev_deps} }%
+Depends: ${misc:Depends}%{ ${DEV_DEPS} }%
 %     fi
 Description: development files
  %{ ${PKG_SHORTDESC} }% development headers and files
