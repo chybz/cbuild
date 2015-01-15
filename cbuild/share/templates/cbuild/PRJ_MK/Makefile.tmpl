@@ -83,18 +83,44 @@ test-report: tests
 	    -P HTML=outfile:quality-reports/tests/index.html,force_inline_css:1,force_inline_js:1 \
 	    t || true
 
+test-report-jenkins: tests
+	@rm -rf build/tap-reports
+	@mkdir -p build/tap-reports
+	@echo "building TAP reports"
+	@cd build && for T in t/*.t; do \
+		env PRJ_BINDIR=$(PRJ_BINDIR) prove \
+			-v -m -e '' $$T | \
+		tee tap-reports/`basename $$T .t`.tap; \
+	done
+
 coverage-report:
 	@rm -rf build/coverage
 	@mkdir -p build/coverage
-	@echo "building coverage data"
+	@echo "building HTML coverage report"
 
 	@cd build && ( \
 		gcovr \
 			-e '/usr/include.*' \
+			-e './build/include\.generated/.*' \
+			-e './sources/tests/.*' \
 			--html --html-details \
 			-o coverage/index.html \
 	    ; \
 	    sed -i"" -r -e 's,>[^<]+/sources/,>,g' coverage/*.html \
+	)
+
+coverage-report-jenkins:
+	@rm -rf build/coverage
+	@mkdir -p build/coverage
+	@echo "building XML coverage report (Jenkins)"
+
+	@cd build && ( \
+		gcovr \
+			-e '/usr/include.*' \
+			-e './build/include\.generated/.*' \
+			-e './sources/tests/.*' \
+			--xml \
+			-o coverage/coverage.xml \
 	)
 
 doc:
@@ -103,7 +129,7 @@ doc:
 % if (($CPKG_IS_DEB)); then
 package: build-project
 	@cd build && ( \
-		rm -rf usr etc && \
+		rm -rf usr etc *.{deb,changes,upload} && \
 		make DESTDIR=packaging install | grep -v '^-- ' && \
 		cd packaging && dpkg-buildpackage -b -uc \
 	)
@@ -140,7 +166,7 @@ install:
 
 % if (($CPKG_IS_DEB)); then
 upload:
-	@cd build && erepo-upload
+	@cd build && dput *.changes
 % fi
 
 clean:

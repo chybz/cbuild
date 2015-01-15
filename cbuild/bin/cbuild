@@ -44,6 +44,7 @@ cp_get_options "$@"
 
 # Check configuration was loaded
 cp_ensure_file_exists $CBUILD_CONF
+cp_check_conf
 cp_ensure_dir_exists $PRJ_SRCDIR
 
 PRJ_OPTS[sanitizer]=$ADDRESS_SANITIZER
