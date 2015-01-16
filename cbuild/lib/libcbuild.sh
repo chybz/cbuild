@@ -919,10 +919,12 @@ function cb_autolink() {
 
             if ((${#SPEC[@]} > 1)); then
                 PKG=${SPEC[1]}
-            elif [[ "$(lp_pkg_from_header $HEADER)" ]]; then
-                PKG="$(lp_pkg_from_header $HEADER)"
             else
-                PKG=$PC
+                PKG="$(lp_pkg_from_header $HEADER)"
+
+                if [ -z "$PKG" ]; then
+                    PKG=$PC
+                fi
             fi
 
             echo $PC $PKG ${CB_AUTOLINK_GROUP[$RE]}
@@ -1132,9 +1134,10 @@ function cb_scan_target_files() {
             if ((!$FOUND)); then
                 # No project target owns FDEP
                 # look in (installed) system packages
-                if [[ "$(lp_pkg_from_header $FDEP)" ]]; then
+                PKG=$(lp_pkg_from_header $FDEP)
+
+                if [[ "$PKG" ]]; then
                     FOUND=$(($FOUND + 1))
-                    PKG=$(lp_pkg_from_header $FDEP)
 
                     # Ensure package is installed
                     cb_install_pkg $TYPE $TARGET $FDEP $PKG
