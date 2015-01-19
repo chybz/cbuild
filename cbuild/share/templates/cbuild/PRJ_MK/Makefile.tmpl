@@ -101,8 +101,8 @@ coverage-report:
 	@cd build && ( \
 		gcovr \
 			-e '/usr/include.*' \
-			-e './build/include\.generated/.*' \
-			-e './sources/tests/.*' \
+			-e '.*/build/include\.generated/.*' \
+			-e '.*/sources/tests/.*' \
 			--html --html-details \
 			-o coverage/index.html \
 	    ; \
@@ -117,8 +117,8 @@ coverage-report-jenkins:
 	@cd build && ( \
 		gcovr \
 			-e '/usr/include.*' \
-			-e './build/include\.generated/.*' \
-			-e './sources/tests/.*' \
+			-e '.*/build/include\.generated/.*' \
+			-e '.*/sources/tests/.*' \
 			--xml \
 			-o coverage/coverage.xml \
 	)
