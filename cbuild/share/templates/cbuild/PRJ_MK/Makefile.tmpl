@@ -129,8 +129,8 @@ doc:
 % if (($CPKG_IS_DEB)); then
 package: build-project
 	@cd build && ( \
-		rm -rf usr etc *.{deb,changes,upload} && \
-		make DESTDIR=packaging install | grep -v '^-- ' && \
+		rm -rf *.deb *.changes *.upload; \
+		make DESTDIR=packaging install | grep -v '^-- '; \
 		cd packaging && dpkg-buildpackage -b -uc \
 	)
 % elif (($CPKG_IS_PKGSRC)); then
