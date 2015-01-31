@@ -2,5 +2,5 @@ language: bash
 before_script:
     - ./utils/install-deps.sh
 script:
-    - ./cpkg/bin/cpkg configure
+    - cpkg configure
     - make package
