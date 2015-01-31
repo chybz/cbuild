@@ -9,5 +9,5 @@ UTILS=$MYTOPDIR/utils
 $UTILS/install-deps.sh
 
 cd $MYTOPDIR
-./cpkg/bin/cpkg configure
+cpkg configure
 make update-pkg
