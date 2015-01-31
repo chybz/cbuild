@@ -13,3 +13,4 @@ rm -rf cpkg-master
 unzip cpkg-master.zip
 cd cpkg-master
 ./utils/autoinst.sh
+cd $MYTOPDIR
