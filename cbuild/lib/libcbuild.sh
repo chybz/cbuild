@@ -785,8 +785,11 @@ function cb_configure_compiler_flags() {
 
     [[ ${PRJ_OPTS[ide]} ]] && CB_GEN_FLAGS+=("-fmessage-length=0")
 
-    [[ ${PRJ_OPTS[asan]} ]] && CB_GEN_FLAGS+=("-fsanitize=address")
-    [[ ${PRJ_OPTS[tsan]} ]] && CB_GEN_FLAGS+=("-fsanitize=thread")
+    if ((${PRJ_OPTS[asan]})); then
+        CB_GEN_FLAGS+=("-fsanitize=address")
+    elif ((${PRJ_OPTS[tsan]})); then
+        CB_GEN_FLAGS+=("-fsanitize=thread")
+    fi
 
     CB_CXXFLAGS+=("-ftemplate-depth=256")
 
