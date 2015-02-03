@@ -30,6 +30,7 @@ fi
 ##############################################################################
 
 OPTSPECS[A]="ADDRESS_SANITIZER::enable address sanitizer:no"
+OPTSPECS[T]="THREAD_SANITIZER::enable thread sanitizer:no"
 OPTSPECS[S]="NO_STACK_PROTECTOR::disable stack protector:no"
 OPTSPECS[C]="NO_CCACHE::disable ccache:no"
 OPTSPECS[N]="CB_NO_SCAN::don't scan sources:no"
@@ -47,7 +48,8 @@ cp_ensure_file_exists $CBUILD_CONF
 cp_check_conf
 cp_ensure_dir_exists $PRJ_SRCDIR
 
-PRJ_OPTS[sanitizer]=$ADDRESS_SANITIZER
+PRJ_OPTS[asan]=$ADDRESS_SANITIZER
+PRJ_OPTS[tsan]=$THREAD_SANITIZER
 [ $NO_STACK_PROTECTOR -eq 1 ] || PRJ_OPTS[stack_protector]=1
 [ $NO_CCACHE -eq 1 ] || PRJ_OPTS[ccache]=1
 [ $DONT_OPTIMIZE -eq 1 ] || PRJ_OPTS[optimize]=1

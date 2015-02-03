@@ -785,6 +785,9 @@ function cb_configure_compiler_flags() {
 
     [[ ${PRJ_OPTS[ide]} ]] && CB_GEN_FLAGS+=("-fmessage-length=0")
 
+    [[ ${PRJ_OPTS[asan]} ]] && CB_GEN_FLAGS+=("-fsanitize=address")
+    [[ ${PRJ_OPTS[tsan]} ]] && CB_GEN_FLAGS+=("-fsanitize=thread")
+
     CB_CXXFLAGS+=("-ftemplate-depth=256")
 
     if (($CPKG_IS_DEB)); then
