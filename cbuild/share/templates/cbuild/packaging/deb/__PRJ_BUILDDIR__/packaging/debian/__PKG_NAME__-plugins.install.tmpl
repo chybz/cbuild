@@ -3,4 +3,7 @@ OPTS["process"]=$((${PRJ_HAS["PLUG"]}))
 %{/Bash}%
 % if ((${OPTS["process"]})); then
 usr/lib/%{ ${PKG_NAME} }%/plugins/lib*.so
+%     for CLASS in ${!PLUG_CLASSES[*]}; do
+usr/lib/%{ ${CLASS} }%/plugins/lib*.so
+%     done
 % fi

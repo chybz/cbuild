@@ -86,6 +86,7 @@ declare -a SVC_TARGETS
 declare -a TST_TARGETS
 declare -a LIB_TARGETS
 declare -a PLUG_TARGETS
+declare -A PLUG_CLASSES
 declare -A TARGET_TYPE_MAP
 declare -A TARGET_HEADER_MAP
 declare -A TARGET_DEP_MAP
@@ -1396,6 +1397,17 @@ function cb_configure_target() {
         cb_save_target_var $TYPE $TARGET "+TVARS" "TARGET_NOINST" 1
     fi
 
+    if [[ \
+        $TYPE == "PLUG" \
+        && \
+        -f $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET/.plug_class \
+    ]]; then
+        local PLUG_CLASS="$(head -n 1 $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$TARGET/.plug_class)"
+
+        cb_save_target_var $TYPE $TARGET "+TVARS" "PLUG_CLASS" $PLUG_CLASS
+        PLUG_CLASSES[$PLUG_CLASS]=1
+    fi
+
     cb_configure_target_pkgconfig $TYPE $TARGET
 
     CPKG_TMPL_PRE=($CB_STATE_DIR/PRJ/CCVARS)
@@ -1493,6 +1505,10 @@ function cb_configure_targets() {
     # Create map of binaries not to install
     cp_save_hash "NOINST_TARGET_MAP" $CB_STATE_DIR/PRJ/NOINST
     CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/NOINST)
+
+    # Create map of plugin classes
+    cp_save_hash "PLUG_CLASSES" $CB_STATE_DIR/PRJ/PLUG_CLASSES
+    CPKG_TMPL_PRE+=($CB_STATE_DIR/PRJ/PLUG_CLASSES)
 
     local TYPE
 

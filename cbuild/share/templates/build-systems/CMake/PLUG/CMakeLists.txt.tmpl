@@ -20,6 +20,14 @@ add_library(
     %{ $SLIST }%
 )
 
+% PLUG_OUTDIR=../../lib/plugins
+% PLUG_INSTDIR=lib/$PKG_NAME/plugins
+%
+% if [[ -n "${PLUG_CLASS}" ]]; then
+%     PLUG_OUTDIR+=".${PLUG_CLASS}"
+%     PLUG_INSTDIR=lib/$PLUG_CLASS/plugins
+% fi
+%
 set_target_properties(
     %{ $TARGET_BUILD_NAME }%
     PROPERTIES
@@ -30,11 +38,11 @@ set_target_properties(
     LINK_FLAGS "%{ ${CB_LIB_LFLAGS[@]} }%"
 % fi
     RUNTIME_OUTPUT_DIRECTORY ../../bin
-    LIBRARY_OUTPUT_DIRECTORY ../../lib/plugins
+    LIBRARY_OUTPUT_DIRECTORY %{ ${PLUG_OUTDIR} }%
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ../../bin
-    LIBRARY_OUTPUT_DIRECTOR_DEBUG ../../lib/plugins
+    LIBRARY_OUTPUT_DIRECTOR_DEBUG %{ ${PLUG_OUTDIR} }%
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ../../bin
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE ../../lib/plugins
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE %{ ${PLUG_OUTDIR} }%
     OUTPUT_NAME %{ $TARGET }%
 )
 % if ((${#TARGET_LIBS[*]})); then
@@ -56,5 +64,5 @@ add_dependencies(
 
 install(
     TARGETS %{ $TARGET_BUILD_NAME }%
-    LIBRARY DESTINATION lib/%{ $PKG_NAME }%/plugins
+    LIBRARY DESTINATION %{ $PLUG_INSTDIR }%
 )
