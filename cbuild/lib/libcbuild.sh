@@ -764,7 +764,14 @@ function cb_find_std_headers() {
 
 function cb_configure_compiler_flags() {
     set +e
-    [[ ${PRJ_OPTS[std]} ]] && CB_CXXFLAGS+=("-std=${PRJ_OPTS[std]}")
+
+    if [[ ${PRJ_OPTS[std]} ]]; then
+        if [[ ${PRJ_OPTS[std]} = "c++1y" && $CB_GCC_VER =~ 4\.9 ]]; then
+            CB_CXXFLAGS+=("-std=c++14")
+        else
+            CB_CXXFLAGS+=("-std=${PRJ_OPTS[std]}")
+        fi
+    fi
 
     if (($CB_CC_IS_CLANG)); then
         CB_CXXFLAGS+=("-stdlib=libc++")
@@ -859,7 +866,11 @@ function cb_configure_compiler() {
         CB_GCOV=${CB_GCOVS[$CPKG_OS]}
     fi
 
-    [[ $CB_CC =~ gcc ]] && CB_CC_IS_GCC=1
+    if [[ $CB_CC =~ gcc ]]; then
+        CB_CC_IS_GCC=1
+        CB_GCC_VER=$($CB_CC -v 2>&1 | grep "^gcc version" | cut -d ' ' -f 3)
+    fi
+
     [[ $CB_CC =~ clang ]] && CB_CC_IS_CLANG=1
 
     cb_find_std_headers
