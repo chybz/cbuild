@@ -7,7 +7,11 @@ usr/lib/lib*.so
 %     fi
 %
 %     for LIB in ${PRJ_LIBS[@]}; do
+%         if ((${PLIB_TARGET_MAP[$TARGET]})); then
+%             continue
+%         else
 usr/lib/pkgconfig/lib%{ ${LIB} }%.pc
+%         fi
 %     done
 usr/include/%{ ${PKG_NAME} }%
 % fi
