@@ -4,7 +4,7 @@ Description: libev
 Version: 1
 Requires:
 Cflags: -I/usr/pkg/include/ev
-Libs: -lev
+Libs: -L/usr/pkg/lib/ev -lev
 % else
 %     OPTS["process"]=0
 % fi
