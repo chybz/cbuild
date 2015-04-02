@@ -799,8 +799,6 @@ function cb_configure_compiler_flags() {
         CB_GEN_FLAGS+=("-fsanitize=thread")
     fi
 
-    CB_CXXFLAGS+=("-ftemplate-depth=256")
-
     if (($CPKG_IS_DEB)); then
         CB_BIN_LFLAGS+=("-Wl,-z,relro" "-Wl,--as-needed")
         CB_LIB_LFLAGS+=("-Wl,-z,relro" "-Wl,--as-needed")
