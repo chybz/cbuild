@@ -655,6 +655,9 @@ function cb_scan_targets() {
         if [ ! -d $PRJ_SRCDIR/$TYPE_DIR/$NAME ]; then
             # Ignore all but directories
             continue
+        elif [[ $TYPE == "TST" && $NAME == "include" ]]; then
+            # Ignore tests private include directory
+            continue
         fi
 
         cb_scan_target $TYPE $NAME
@@ -1293,6 +1296,11 @@ function cb_configure_target_include() {
     local -a TARGET_INC=(../../${TYPE_DIRS[$TYPE]}/$TARGET)
 
     local INC
+
+    if [[ $TYPE == "TST" ]]; then
+        INC=$PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/include
+        [ -d $INC ] && TARGET_INC+=(../include)
+    fi
 
     INC=$PRJ_SRCDIR/${TYPE_DIRS[INC]}/$TARGET
     [ -d $INC ] && TARGET_INC+=(../../${TYPE_DIRS[INC]}/$TARGET)
