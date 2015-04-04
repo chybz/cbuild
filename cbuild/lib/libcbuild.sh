@@ -555,6 +555,23 @@ function cb_scan_target() {
         done
     fi
 
+    local LOCAL_HEADERS=$(
+        cp_find_re_rel $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$NAME $CB_HDR_RE
+    )
+
+    if [[ \
+        $TYPE == "TST" \
+        && \
+        -d $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/${TYPE_DIRS[INC]} \
+    ]]; then
+        # Common tests headers
+        LOCAL_HEADERS+=$(
+            cp_find_re_rel \
+                $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/${TYPE_DIRS[INC]} \
+                $CB_HDR_RE
+        )
+    fi
+
     cb_save_target_list \
         $TYPE $NAME \
         "LOCAL_HEADERS" \
