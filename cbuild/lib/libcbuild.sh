@@ -861,7 +861,6 @@ function cb_configure_compiler_flags() {
 
     if [[ $CPKG_BIN_ARCH == "x86_64" ]]; then
         CB_GEN_FLAGS+=(
-            "-march=nehalem"
             "-msse" "-msse2"
             "-msse3" "-mssse3"
             "-msse4.1" "-msse4.2"
