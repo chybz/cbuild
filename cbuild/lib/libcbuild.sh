@@ -713,7 +713,7 @@ function cb_scan() {
     CPKG_TMPL_VARS="$OLD_TMPL_VARS"
 
     for TYPE in $CB_SCAN_ORDER; do
-        if [[ $TYPE == "TST" && ${PRJ_OPTS[no_tests]} ]]; then
+        if [[ $TYPE == "TST" && ${PRJ_OPTS[tests]} -eq 0 ]]; then
             continue
         fi
 

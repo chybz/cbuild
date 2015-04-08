@@ -49,7 +49,7 @@ cp_ensure_file_exists $CBUILD_CONF
 cp_check_conf
 cp_ensure_dir_exists $PRJ_SRCDIR
 
-PRJ_OPTS[no_tests]=$NO_TESTS
+[ $NO_TESTS -eq 1 ] || PRJ_OPTS[tests]=1
 PRJ_OPTS[asan]=$ADDRESS_SANITIZER
 PRJ_OPTS[tsan]=$THREAD_SANITIZER
 [ $NO_STACK_PROTECTOR -eq 1 ] || PRJ_OPTS[stack_protector]=1
