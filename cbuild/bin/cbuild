@@ -29,12 +29,13 @@ fi
 #
 ##############################################################################
 
-OPTSPECS[A]="ADDRESS_SANITIZER::enable address sanitizer:no"
-OPTSPECS[T]="THREAD_SANITIZER::enable thread sanitizer:no"
+OPTSPECS[T]="NO_TESTS::disable tests:no"
 OPTSPECS[S]="NO_STACK_PROTECTOR::disable stack protector:no"
 OPTSPECS[C]="NO_CCACHE::disable ccache:no"
 OPTSPECS[N]="CB_NO_SCAN::don't scan sources:no"
 OPTSPECS[O]="DONT_OPTIMIZE::disable optimizations:no"
+OPTSPECS[a]="ADDRESS_SANITIZER::enable address sanitizer:no"
+OPTSPECS[t]="THREAD_SANITIZER::enable thread sanitizer:no"
 OPTSPECS[c]="COVERAGE::enable coverage:no"
 OPTSPECS[p]="PROFILING::enable profiling:no"
 OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
@@ -48,6 +49,7 @@ cp_ensure_file_exists $CBUILD_CONF
 cp_check_conf
 cp_ensure_dir_exists $PRJ_SRCDIR
 
+PRJ_OPTS[no_tests]=$NO_TESTS
 PRJ_OPTS[asan]=$ADDRESS_SANITIZER
 PRJ_OPTS[tsan]=$THREAD_SANITIZER
 [ $NO_STACK_PROTECTOR -eq 1 ] || PRJ_OPTS[stack_protector]=1
