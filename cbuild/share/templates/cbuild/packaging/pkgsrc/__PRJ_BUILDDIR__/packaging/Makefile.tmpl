@@ -26,6 +26,7 @@ LICENSE=	mit
 % if ((${#PRJ_PKGS[@]})); then
 
 %     for DEP in ${!PRJ_PKGS[@]}; do
+%         [ -n "$DEP" ] || continue
 %         DPATH=$(pkg_info -Q PKGPATH $DEP)
 %         DNAME=$(basename $DPATH)
 %         BLINK3+=("../../$DPATH/buildlink3.mk")

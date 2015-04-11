@@ -15,6 +15,7 @@ BUILDLINK_API_DEPENDS.%{ ${PKG_NAME} }%+=	%{ ${PKG_NAME} }%>=0.1
 BUILDLINK_PKGSRCDIR.%{ ${PKG_NAME} }%?=	../../devel/%{ ${PKG_NAME} }%
 
 %     for PKG in ${!PRJ_RUNTIME_PKGS[@]}; do
+%         [ -n "$PKG" ] || continue
 %         DPATH=$(pkg_info -Q PKGPATH $PKG)
 .include "../../%{ $DPATH }%/buildlink3.mk"
 %     done
