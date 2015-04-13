@@ -130,6 +130,13 @@ doc:
 package: build-project
 	@cd build && ( \
 		rm -rf *.deb *.changes *.upload; \
+		find \
+		    packaging \
+		    -mindepth 1 \
+		    -maxdepth 1 \
+		    -type d \
+		    \! -name debian \
+		    -print0 | xargs -0 rm -rf; \
 		make DESTDIR=packaging install | grep -v '^-- '; \
 		cd packaging && dpkg-buildpackage -b -uc \
 	)

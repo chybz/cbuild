@@ -42,7 +42,7 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY_RELEASE ../../lib
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE ../../lib
     OUTPUT_NAME %{ $TARGET_OUTPUT_NAME }%
-    SOVERSION %{ $PKG_VER }%
+    SOVERSION %{ $PKG_MAJOR }%
     VERSION %{ $PKG_VER }%
 )
 % if ((${#TARGET_LIBS[*]})); then
