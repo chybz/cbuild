@@ -189,23 +189,26 @@ CB_STATE_DIR=$(pwd)/.cbuild
 
 export CB_CC_IS_GCC=0
 export CB_CC_IS_CLANG=0
+export CB_TOOLCHAIN=""
 
-# Default compiler commands
-declare -A CB_CPPS=(
-    [Linux]=/usr/bin/cpp
-    [Darwin]=/usr/bin/cpp
+declare -A GCC_CMDS=(
+    [CPP]=cpp
+    [CC]=gcc
+    [CXX]=g++
+    [GCOV]=gcov
 )
-declare -A CB_CCS=(
-    [Linux]=/usr/bin/gcc
-    [Darwin]=/usr/bin/clang
+
+declare -A CLANG_CMDS=(
+    [CPP]=cpp
+    [CC]=clang
+    [CXX]=clang++
+    [GCOV]=gcov
 )
-declare -A CB_CXXS=(
-    [Linux]=/usr/bin/g++
-    [Darwin]=/usr/bin/clang++
-)
-declare -A CB_GCOVS=(
-    [Linux]=/usr/bin/gcov
-    [Darwin]=/usr/bin/gcov
+
+# Default compiler toolchains
+declare -A CB_TOOLCHAINS=(
+    [Linux]=gcc
+    [Darwin]=clang
 )
 
 CB_EMPTY_DIR=$CB_STATE_DIR/empty-dir
@@ -820,7 +823,16 @@ function cb_configure_compiler_flags() {
     if ((${PRJ_OPTS[asan]})); then
         CB_GEN_FLAGS+=("-fsanitize=address")
     elif ((${PRJ_OPTS[tsan]})); then
-        CB_GEN_FLAGS+=("-fsanitize=thread")
+        CB_GEN_FLAGS+=("-fsanitize=thread" "-fPIE")
+        CB_BIN_LFLAGS+=("-pie")
+    fi
+
+    if ((${PRJ_OPTS[lsan]})); then
+        CB_GEN_FLAGS+=("-fsanitize=leak")
+    fi
+
+    if ((${PRJ_OPTS[usan]})); then
+        CB_GEN_FLAGS+=("-fsanitize=undefined")
     fi
 
     if (($CPKG_IS_DEB)); then
@@ -882,20 +894,47 @@ function cb_configure_compiler_flags() {
 }
 
 function cb_configure_compiler() {
-    CB_CPP=${CB_CPPS[$CPKG_OS]}
-    CB_CC=${CB_CCS[$CPKG_OS]}
-    CB_CXX=${CB_CXXS[$CPKG_OS]}
+    if [[ -z "$CB_TOOLCHAIN" ]]; then
+        CB_TOOLCHAIN=${CB_TOOLCHAINS[$CPKG_OS]}
+    fi
+
+    if [[ "$CB_TOOLCHAIN" =~ ^(gcc|clang)-(.+)$ ]]; then
+        CB_TOOLCHAIN=${BASH_REMATCH[1]}
+        CB_TOOLCHAIN_VER=${BASH_REMATCH[2]}
+    fi
+
+    if ! [[ "$CB_TOOLCHAIN" =~ ^(gcc|clang)$ ]]; then
+        cp_error "invalid toolchain: $CB_TOOLCHAIN"
+    fi
+
+    case $CB_TOOLCHAIN in
+        gcc)
+            CB_CPP=${GCC_CMDS[CPP]}
+            CB_CC=${GCC_CMDS[CC]}
+            CB_CXX=${GCC_CMDS[CXX]}
+            CB_GCOV=${GCC_CMDS[GCOV]}
+            CB_CC_IS_GCC=1
+            CB_GCC_VER=$($CB_CC -v 2>&1 | grep "^gcc version" | cut -d ' ' -f 3)
+            ;;
+        clang)
+            CB_CPP=${CLANG_CMDS[CPP]}
+            CB_CC=${CLANG_CMDS[CC]}
+            CB_CXX=${CLANG_CMDS[CXX]}
+            CB_GCOV=${CLANG_CMDS[GCOV]}
+            CB_CC_IS_CLANG=1
+            ;;
+    esac
+
+    if [[ -n "$CB_TOOLCHAIN_VER" ]]; then
+        CB_CPP+="-$CB_TOOLCHAIN_VER"
+        CB_CC+="-$CB_TOOLCHAIN_VER"
+        CB_CXX+="-$CB_TOOLCHAIN_VER"
+        CB_GCOV+="-$CB_TOOLCHAIN_VER"
+    fi
 
     if ((${PRJ_OPTS[coverage]})); then
         CB_GCOV=${CB_GCOVS[$CPKG_OS]}
     fi
-
-    if [[ $CB_CC =~ gcc ]]; then
-        CB_CC_IS_GCC=1
-        CB_GCC_VER=$($CB_CC -v 2>&1 | grep "^gcc version" | cut -d ' ' -f 3)
-    fi
-
-    [[ $CB_CC =~ clang ]] && CB_CC_IS_CLANG=1
 
     cb_find_std_headers
     cb_configure_compiler_flags
