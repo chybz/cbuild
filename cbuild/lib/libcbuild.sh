@@ -801,7 +801,7 @@ function cb_configure_compiler_flags() {
     fi
 
     if (($CB_CC_IS_CLANG)); then
-        CB_CXXFLAGS+=("-stdlib=libc++")
+        CB_CXXFLAGS+=("-stdlib=libc++" "-ftemplate-depth=512")
         CB_CXXFLAGS+=("-Qunused-arguments" "-fcolor-diagnostics")
         CB_CFLAGS+=("-Qunused-arguments" "-fcolor-diagnostics")
     fi
