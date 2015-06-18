@@ -66,27 +66,31 @@ install(
 % fi
 
 install(
-    DIRECTORY etc/
-    DESTINATION etc/%{ $PRJ_NAME }%
+    DIRECTORY ../etc/
+    DESTINATION /etc/%{ $PRJ_NAME }%
     OPTIONAL
+    FILES_MATCHING PATTERN "*"
 )
 
 install(
-    DIRECTORY etc_/
-    DESTINATION etc
+    DIRECTORY ../etc_/
+    DESTINATION /etc
     OPTIONAL
+    FILES_MATCHING PATTERN "*"
 )
 
 install(
-    DIRECTORY share/
+    DIRECTORY ../share/
     DESTINATION share/%{ $PRJ_NAME }%
     OPTIONAL
+    FILES_MATCHING PATTERN "*"
 )
 
 install(
-    DIRECTORY share_/
+    DIRECTORY ../share_/
     DESTINATION share
     OPTIONAL
+    FILES_MATCHING PATTERN "*"
 )
 
 install(
