@@ -44,6 +44,7 @@ OPTSPECS[p]="PROFILING::enable profiling:no"
 OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
 OPTSPECS[G]="CMAKE_GEN:STRING:choose CMake generator:Unix Makefiles"
 OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
+OPTSPECS[y]="CB_YES::assume yes:no"
 
 cp_get_options "$@"
 
