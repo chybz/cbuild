@@ -29,6 +29,7 @@ fi
 #
 ##############################################################################
 
+OPTSPECS[B]="CB_TOOLCHAIN:gcc|clang:change default build toolchain:"
 OPTSPECS[T]="NO_TESTS::disable tests:no"
 OPTSPECS[S]="NO_STACK_PROTECTOR::disable stack protector:no"
 OPTSPECS[C]="NO_CCACHE::disable ccache:no"
@@ -36,11 +37,14 @@ OPTSPECS[N]="CB_NO_SCAN::don't scan sources:no"
 OPTSPECS[O]="DONT_OPTIMIZE::disable optimizations:no"
 OPTSPECS[a]="ADDRESS_SANITIZER::enable address sanitizer:no"
 OPTSPECS[t]="THREAD_SANITIZER::enable thread sanitizer:no"
+OPTSPECS[l]="LEAK_SANITIZER::enable leak sanitizer:no"
+OPTSPECS[u]="UNDEFINED_SANITIZER::enable undefined sanitizer:no"
 OPTSPECS[c]="COVERAGE::enable coverage:no"
 OPTSPECS[p]="PROFILING::enable profiling:no"
 OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
 OPTSPECS[G]="CMAKE_GEN:STRING:choose CMake generator:Unix Makefiles"
 OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
+OPTSPECS[y]="CB_YES::assume yes:no"
 
 cp_get_options "$@"
 
@@ -52,6 +56,8 @@ cp_ensure_dir_exists $PRJ_SRCDIR
 [ $NO_TESTS -eq 1 ] || PRJ_OPTS[tests]=1
 PRJ_OPTS[asan]=$ADDRESS_SANITIZER
 PRJ_OPTS[tsan]=$THREAD_SANITIZER
+PRJ_OPTS[lsan]=$LEAK_SANITIZER
+PRJ_OPTS[usan]=$UNDEFINED_SANITIZER
 [ $NO_STACK_PROTECTOR -eq 1 ] || PRJ_OPTS[stack_protector]=1
 [ $NO_CCACHE -eq 1 ] || PRJ_OPTS[ccache]=1
 [ $DONT_OPTIMIZE -eq 1 ] || PRJ_OPTS[optimize]=1
