@@ -865,6 +865,11 @@ function cb_configure_compiler_flags() {
             "-msse3" "-mssse3"
             "-msse4.1" "-msse4.2"
         )
+
+        if ((${PRJ_OPTS[avx2]})); then
+            CB_GEN_FLAGS+=("-mavx" "-mavx2")
+        fi
+
         (($CB_CC_IS_GCC)) && CB_GEN_FLAGS+=("-mfpmath=sse")
     elif [[ $CPKG_BIN_ARCH == "i386" ]]; then
         CB_GEN_FLAGS+=(
