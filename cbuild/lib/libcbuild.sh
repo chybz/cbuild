@@ -531,6 +531,13 @@ function cb_scan_target() {
             $CB_SRC_RE
     ))
 
+    if ((${#SOURCES[@]} == 0)); then
+        if [[ $TYPE == "BIN" || $TYPE == "TST" ]]; then
+            # Ignore binaries and tests directories without sources
+            return
+        fi
+    fi
+
     cb_save_target_list $TYPE $NAME "SOURCES"
 
     local NOT_A_SERVICE=1
@@ -879,7 +886,10 @@ function cb_configure_compiler_flags() {
         )
 
         if ((${PRJ_OPTS[avx2]})); then
-            CB_GEN_FLAGS+=("-mavx" "-mavx2")
+            CB_GEN_FLAGS+=("-mavx")
+            CB_GEN_FLAGS+=("-mavx2")
+        elif ((${PRJ_OPTS[avx]})); then
+            CB_GEN_FLAGS+=("-mavx")
         fi
 
         (($CB_CC_IS_GCC)) && CB_GEN_FLAGS+=("-mfpmath=sse")
