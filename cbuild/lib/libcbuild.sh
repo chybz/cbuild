@@ -7,8 +7,13 @@ if [ "${BASH_VERSINFO[0]}" -ne 4 ]; then
 fi
 
 # Check cpkg-config is available
-if ! which cpkg-config >/dev/null; then
-    echo "cpkg-config not found, please install cpkg"
+if [ -z "$CPKG_HOME" ]; then
+    if ! which cpkg-config >/dev/null; then
+        echo "cpkg-config not found, please install cpkg"
+        exit 1
+    fi
+elif ! [ -x $CPKG_HOME/bin/cpkg-config ]; then
+    echo "$CPKG_HOME is not a valid cpkg directory"
     exit 1
 fi
 
@@ -168,7 +173,11 @@ PKG_NAME=${PRJ_NAME//_/-}
 PRJ_DEFPREFIX="${PRJ_NAME^^}_"
 PRJ_DEFPREFIX="${PRJ_DEFPREFIX//-/_}"
 
-. $(cpkg-config -L)
+if [ -z "CPKG_HOME" ]; then
+    . $(cpkg-config -L)
+else
+    . $($CPKG_HOME/bin/cpkg-config -L)
+fi
 
 PROJECT_VARS="PRJ_NAME PKG_AUTHOR"
 PROJECT_VARS+=" PKG_SHORTDESC PKG_LONGDESC PRJ_TARGET PRJ_DEFPREFIX"
@@ -270,7 +279,7 @@ function cb_load_autolink() {
     for RE in ${!AUTOLINK[@]}; do
         # Resolve full package names
         local -a SPEC=(${AUTOLINK[$RE]})
-        SPEC[1]=$(lp_full_pkg_name ${SPEC[1]})
+        #SPEC[1]=$(lp_full_pkg_name ${SPEC[1]})
         CB_AUTOLINK[$RE]="${SPEC[@]}"
         CB_AUTOLINK_GROUP[$RE]=${GROUP^^}
     done
