@@ -173,7 +173,7 @@ PKG_NAME=${PRJ_NAME//_/-}
 PRJ_DEFPREFIX="${PRJ_NAME^^}_"
 PRJ_DEFPREFIX="${PRJ_DEFPREFIX//-/_}"
 
-if [ -z "CPKG_HOME" ]; then
+if [ -z "$CPKG_HOME" ]; then
     . $(cpkg-config -L)
 else
     . $($CPKG_HOME/bin/cpkg-config -L)
