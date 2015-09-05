@@ -809,11 +809,7 @@ function cb_configure_compiler_flags() {
     set +e
 
     if [[ ${PRJ_OPTS[std]} ]]; then
-        if [[ ${PRJ_OPTS[std]} = "c++1y" && $CB_GCC_VER =~ 4\.9 ]]; then
-            CB_CXXFLAGS+=("-std=c++14")
-        else
-            CB_CXXFLAGS+=("-std=${PRJ_OPTS[std]}")
-        fi
+        CB_CXXFLAGS+=("-std=${PRJ_OPTS[std]}")
     fi
 
     if (($CB_CC_IS_CLANG)); then
