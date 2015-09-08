@@ -45,6 +45,7 @@ OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
 OPTSPECS[G]="CMAKE_GEN:STRING:choose CMake generator:Unix Makefiles"
 OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
 OPTSPECS[y]="CB_YES::assume yes:no"
+OPTSPECS[q]="TIMINGS::enable compiler timing:no"
 
 cp_get_options "$@"
 
@@ -63,6 +64,7 @@ PRJ_OPTS[usan]=$UNDEFINED_SANITIZER
 [ $DONT_OPTIMIZE -eq 1 ] || PRJ_OPTS[optimize]=1
 PRJ_OPTS[coverage]=$COVERAGE
 PRJ_OPTS[profiling]=$PROFILING
+PRJ_OPTS[timings]=$TIMINGS
 
 export CB_NO_SCAN
 
