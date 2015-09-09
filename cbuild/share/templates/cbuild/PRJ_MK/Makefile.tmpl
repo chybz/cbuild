@@ -18,6 +18,9 @@ all: build-project
 build-project:
 	@$(MAKE) $(CB_JOBS) -C build
 
+iwyu:
+	(cd build && cmake -D IWYU=true ../sources && make iwyu)
+
 % declare -a BIN_TARGETS
 %
 % for TARGET in ${PRJ_BINS[@]}; do

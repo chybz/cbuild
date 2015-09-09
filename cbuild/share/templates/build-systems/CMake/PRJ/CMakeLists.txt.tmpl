@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
+if(${IWYU})
+include(cmake/iwyu.cmake)
+endif()
+
 project(%{ $PRJ_NAME }%)
 
 set(CMAKE_RULE_MESSAGES OFF)
