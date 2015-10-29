@@ -19,7 +19,13 @@ build-project:
 	@$(MAKE) $(CB_JOBS) -C build
 
 iwyu:
-	(cd build && cmake -D IWYU=true ../sources && make iwyu)
+	@rm -rf iwyu && mkdir iwyu
+	@cd iwyu && ( \
+		env \
+		   CC="clang" CXX="clang++" \
+		   cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE ../sources; \
+		iwyu_tool -p .
+	)
 
 % declare -a BIN_TARGETS
 %

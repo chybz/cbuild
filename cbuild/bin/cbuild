@@ -64,6 +64,7 @@ PRJ_OPTS[usan]=$UNDEFINED_SANITIZER
 [ $DONT_OPTIMIZE -eq 1 ] || PRJ_OPTS[optimize]=1
 PRJ_OPTS[coverage]=$COVERAGE
 PRJ_OPTS[profiling]=$PROFILING
+PRJ_OPTS[debug]=$CB_DEBUG
 PRJ_OPTS[timings]=$TIMINGS
 
 export CB_NO_SCAN
