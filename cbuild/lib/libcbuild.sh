@@ -135,6 +135,7 @@ declare -A PRJ_HAS=(
 PKG_AUTHOR="Lazy Programmer <eat@joes.com>"
 PRJ_SRCDIR=$TOPDIR/sources
 PRJ_BUILDDIR=$TOPDIR/build
+PRJ_IWYUDIR=$TOPDIR/iwyu
 PRJ_BATSDIR=$TOPDIR/bats
 PRJ_HAS_BATS=0
 PRJ_ETCDIR=$TOPDIR/etc
@@ -816,6 +817,10 @@ function cb_configure_compiler_flags() {
 
     if [[ ${PRJ_OPTS[std]} ]]; then
         CB_CXXFLAGS+=("-std=${PRJ_OPTS[std]}")
+    fi
+
+    if ((${PRJ_OPTS[debug]})); then
+        CB_GEN_FLAGS+=("-DDEBUG")
     fi
 
     if (($CB_CC_IS_CLANG)); then
@@ -1734,7 +1739,9 @@ function cb_run_generator() {
     cp_find_cmd CB_GEN "cmake"
     cd $PRJ_BUILDDIR
 
-    local -a GENOPTS=("-DCMAKE_INSTALL_PREFIX=$CPKG_PREFIX")
+    local -a GENOPTS=(
+        "-DCMAKE_INSTALL_PREFIX=$CPKG_PREFIX"
+    )
 
     if [[ -n "$CMAKE_GEN" && $CMAKE_GEN != "Unix Makefiles" ]]; then
         GENOPTS+=("-G" "$CMAKE_GEN")
@@ -1759,11 +1766,12 @@ function cb_run_generator() {
     " ${MAKEFILES[@]}
 }
 
-function cb_configure() {
-    if (($CB_DEBUG)); then
-        CPKG_DEBUG=1
-    fi
+function cb_run_iwyu() {
+    mkdir -p $PRJ_IWYUDIR
+    $CB_GEN "${GENOPTS[@]}" $PRJ_SRCDIR
+}
 
+function cb_configure() {
     cb_check_conf
 
     export CB_PKGSRC_BUILD=0
