@@ -26,7 +26,7 @@ add_definitions(
     -D%{ ${PRJ_DEFPREFIX} }%EXPORTS
     -D%{ ${CPKG_PF^^} }%
     -D%{ ${CPKG_OS^^} }%
-% if [[ ${PRJ_OPTS[stack_protector]} ]]; then
+% if [[ ${PRJ_OPTS[stack_protector]} && $CPKG_DIST != "MacOSX" ]]; then
     -D_FORTIFY_SOURCE=2
 % fi
     -DBOOST_ALL_DYN_LINK
