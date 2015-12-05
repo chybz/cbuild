@@ -1123,6 +1123,7 @@ function cb_scan_target_files() {
     local -A SEEN_PCDEPS
     local -a PCDEPS
     local -a RUNTIME_PCDEPS
+    local -A SEEN_RUNTIME_PCDEPS
 
     # Build map of this target files
     for KEYFILE in ${HEADERS[@]} ${LOCAL_HEADERS[@]} ${SOURCES[@]}; do
@@ -1294,9 +1295,12 @@ function cb_scan_target_files() {
                         fi
 
                         if (($IS_HEADER)); then
-                            # Runtime pkg-config dependency on a
-                            # locally generated pkg-config file
-                            RUNTIME_PCDEPS+=($PCDEP)
+                            if [[ ! "${SEEN_RUNTIME_PCDEPS[$PCDEP]}" ]]; then
+                                # Runtime pkg-config dependency on a
+                                # locally generated pkg-config file
+                                RUNTIME_PCDEPS+=($PCDEP)
+                                SEEN_RUNTIME_PCDEPS[$PCDEP]=1
+                            fi
                         fi
                     done
                 fi
