@@ -1176,6 +1176,7 @@ function cb_scan_target_files() {
 
         local DEPLINE DEP FDEP PKG
         local IS_HEADER IS_SOURCE
+        local SYS_AUTOLINK
 
         if [[ $KIND == "HEADERS" ]]; then
             IS_HEADER=1
@@ -1192,11 +1193,23 @@ function cb_scan_target_files() {
                 continue
             fi
 
-            if [[ "${STD_HEADERS[$FDEP]}" || "${TARGET_MAP[$FDEP]}" ]]; then
+            local -a AUTOLINK=($(cb_autolink $FDEP))
+
+            if ((${#AUTOLINK[@]} > 0)); then
+                if [[ ${AUTOLINK[1]} == "SYSTEM" ]]; then
+                    SYS_AUTOLINK=1
+                fi
+            fi
+
+            if [[ \
+                "${STD_HEADERS[$FDEP]}" \
+                || \
+                "${TARGET_MAP[$FDEP]}" \
+                || \
+                "$SYS_AUTOLINK"
+            ]]; then
                 # Ignore system/this target headers
                 # Look for additional autolink rules
-                local -a AUTOLINK=($(cb_autolink $FDEP))
-
                 if ((${#AUTOLINK[@]} > 0)); then
                     local PCDEP=(${AUTOLINK[0]})
                     PRJ_AUTOLINK[${AUTOLINK[2]}]=1
@@ -1265,15 +1278,10 @@ function cb_scan_target_files() {
                     if [[ "$(lp_pkg_pkgconfigs $PKG)" ]]; then
                         # System package has pkg-config info
                         TPCDEPS=($(lp_pkg_pkgconfigs $PKG))
-                    else
-                        # Look in autolink rules
-                        local -a AUTOLINK=($(cb_autolink $FDEP))
-
-                        if ((${#AUTOLINK[@]} > 0)); then
-                            TPCDEPS+=(${AUTOLINK[0]})
-                            PKG=${AUTOLINK[1]}
-                            PRJ_AUTOLINK[${AUTOLINK[2]}]=1
-                        fi
+                    elif ((${#AUTOLINK[@]} > 0)); then
+                        TPCDEPS+=(${AUTOLINK[0]})
+                        PKG=${AUTOLINK[1]}
+                        PRJ_AUTOLINK[${AUTOLINK[2]}]=1
                     fi
 
                     if [[ ! "${SEEN_PKGDEPS[$PKG]}" ]]; then
