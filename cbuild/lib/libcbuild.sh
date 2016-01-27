@@ -1206,7 +1206,7 @@ function cb_scan_target_files() {
                 || \
                 "${TARGET_MAP[$FDEP]}" \
                 || \
-                "$SYS_AUTOLINK"
+                "$SYS_AUTOLINK" \
             ]]; then
                 # Ignore system/this target headers
                 # Look for additional autolink rules
