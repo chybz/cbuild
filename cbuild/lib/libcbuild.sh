@@ -1194,12 +1194,11 @@ function cb_scan_target_files() {
             fi
 
             local -a AUTOLINK=($(cb_autolink $FDEP))
+            SYS_AUTOLINK=0
 
             if ((${#AUTOLINK[@]} > 0)); then
                 if [[ ${AUTOLINK[1]} == "SYSTEM" ]]; then
                     SYS_AUTOLINK=1
-                else
-                    SYS_AUTOLINK=0
                 fi
             fi
 
