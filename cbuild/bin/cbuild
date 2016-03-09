@@ -46,6 +46,7 @@ OPTSPECS[G]="CMAKE_GEN:STRING:choose CMake generator:Unix Makefiles"
 OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
 OPTSPECS[y]="CB_YES::assume yes:no"
 OPTSPECS[q]="TIMINGS::enable compiler timing:no"
+OPTSPECS[j]="CB_CPUS:NUMBER:number of CPUs to use:"
 
 cp_get_options "$@"
 

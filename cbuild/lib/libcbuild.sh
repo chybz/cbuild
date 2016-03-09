@@ -200,6 +200,11 @@ CB_STATE_DIR=$(pwd)/.cbuild
 export CB_CC_IS_GCC=0
 export CB_CC_IS_CLANG=0
 export CB_TOOLCHAIN=""
+export CB_CPUS
+
+if [[ -z "$CB_CPUS" ]]; then
+    CB_CPUS=0
+fi
 
 declare -A GCC_CMDS=(
     [CPP]=cpp
@@ -252,8 +257,6 @@ export CB_GCOV=""
 
 # Default generator
 export CB_GEN=""
-
-export CB_CPUS=1
 
 # Load autolink definitions
 declare -A CB_AUTOLINK
@@ -315,7 +318,14 @@ function cb_find_cpus() {
         CPUS=${CPUS%% }
     fi
 
-    CB_CPUS=$CPUS
+    if ! [[ "$CB_CPUS" =~ ^[[:digit:]]+$ ]]; then
+        cp_error "invalid number of CPUs: $CB_CPUS"
+    fi
+
+    if (($CB_CPUS == 0 || $CB_CPUS > $CPUS)); then
+        CB_CPUS=$CPUS
+    fi
+
     cp_msg "using $CB_CPUS CPU core(s)"
 }
 
