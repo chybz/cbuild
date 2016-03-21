@@ -1489,6 +1489,18 @@ function cb_configure_target_link() {
         fi
     done
 
+    if ((${PRJ_OPTS[TCMalloc]} && ${PRJ_OPTS[jemalloc]})); then
+        cp_error "use TCMalloc or jemalloc, not both"
+    fi
+
+    if ((${PRJ_OPTS[TCMalloc]})); then
+        LIBS+=("tcmalloc")
+    fi
+
+    if ((${PRJ_OPTS[jemalloc]})); then
+        LIBS+=("jemalloc")
+    fi
+
     cb_save_target_list \
         $TYPE $TARGET "TARGET_LIBS" \
         ${LIBS[@]}
