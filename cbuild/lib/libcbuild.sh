@@ -226,6 +226,12 @@ declare -A CB_TOOLCHAINS=(
     [Darwin]=clang
 )
 
+# jemalloc package name
+declare -A CB_JEMALLOC_PKGS=(
+    [Linux]=libjemalloc-dev
+    [Darwin]=""
+)
+
 CB_EMPTY_DIR=$CB_STATE_DIR/empty-dir
 CB_LOG_DIR=$CB_STATE_DIR/log
 
@@ -1500,7 +1506,18 @@ function cb_configure_target_link() {
     fi
 
     (($TCMALLOC)) && LIBS+=("tcmalloc")
-    (($JEMALLOC)) && LIBS+=("jemalloc")
+
+    if (($JEMALLOC)); then
+        local PKG=${CB_JEMALLOC_PKGS[$CPKG_OS]}
+
+        if [ -n "$PKG" ]; then
+            LIBS+=("jemalloc")
+
+            if ! lp_is_pkg_installed $PKG; then
+                lp_install_packages $PKG
+            fi
+        fi
+    fi
 
     cb_save_target_list \
         $TYPE $TARGET "TARGET_LIBS" \
