@@ -36,7 +36,7 @@ public:
 
     void test_unit_start(std::ostream& ost, but::test_unit const& tu)
     {
-        if (tu.p_type == but::tut_case) {
+        if (is_tut_case(tu.p_type)) {
             ++current_test_;
             current_test_ok_ = true;
         }
@@ -44,7 +44,7 @@ public:
 
     void test_unit_finish(std::ostream& ost, but::test_unit const& tu, unsigned long elapsed)
     {
-        if (tu.p_type == but::tut_case) {
+        if (is_tut_case(tu.p_type)) {
             ost
                 << (
                     current_test_ok_
@@ -63,7 +63,7 @@ public:
         ost << "ok " << current_test_ << " # SKIP\n";
     }
 
-    void log_exception(std::ostream& ost, but::log_checkpoint_data const& checkpoint_data, boost::execution_exception const& ex)
+    void log_exception_start(std::ostream& ost, but::log_checkpoint_data const& checkpoint_data, boost::execution_exception const& ex)
     {
         boost::execution_exception::location const& loc = ex.where();
 
@@ -98,6 +98,16 @@ public:
 
         ost << ": " << ex.what() << std::endl;
     }
+
+    void log_exception_finish(std::ostream& ost)
+    {}
+
+#if BOOST_VERSION < 105900
+    void log_exception(std::ostream& ost, but::log_checkpoint_data const& checkpoint_data, boost::execution_exception const& ex)
+    {
+        log_exception_start(ost, checkpoint_data, ex);
+    }
+#endif
 
     void log_entry_start(std::ostream& ost, but::log_entry_data const& entry_data, log_entry_types let)
     {
@@ -142,10 +152,28 @@ public:
         }
     }
 
+    void entry_context_start(std::ostream& ost, but::log_level l)
+    {}
+
+    void log_entry_context(std::ostream& ost, but::const_string value)
+    {}
+
+    void entry_context_finish(std::ostream& ost)
+    {}
+
 private:
     unsigned int current_test_;
     bool current_test_ok_;
     bool skip_log_entry_;
+
+    static bool is_tut_case(but::test_unit_type type)
+    {
+#if BOOST_VERSION < 105900
+        return type == but::tut_case;
+#else
+        return type == but::TUT_CASE;
+#endif
+    }
 };
 
 } // namespace unit_test
