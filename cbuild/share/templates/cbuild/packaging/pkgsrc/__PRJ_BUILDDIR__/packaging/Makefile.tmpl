@@ -37,7 +37,7 @@ DEPENDS+=	%{ $DNAME }%>=0:../../%{ $DPATH }%
 WRKSRC=		${WRKDIR}/%{ ${PKG_NAME} }%-${GITCOMMIT}
 USE_LANGUAGES=	c c++
 USE_CMAKE=	yes
-USE_TOOLS+= gmake pkg-config
+USE_TOOLS+= gmake pkgconf
 % CFGFILES=$(cp_find_rel $PKG_SOURCEDIR/etc)
 % if [[ -n "$CFGFILES" ]]; then
 

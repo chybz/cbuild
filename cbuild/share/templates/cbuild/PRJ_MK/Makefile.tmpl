@@ -153,7 +153,7 @@ package: build-project
 package:
 	@rsync -aq build/packaging/ %{ $PKGSRC_DIR/$PKG_CAT/$PKG_NAME/ }%
 	@cd %{ $PKGSRC_DIR/$PKG_CAT/$PKG_NAME/ }% && ( \
-		sudo -s -- " \
+		sudo -- $(SHELL) -c " \
 		    bmake distclean && \
 		    bmake fetch && \
 		    bmake mdi && \
@@ -170,7 +170,7 @@ update-pkg: package
 % if (($CPKG_IS_DEB)); then
 	@sudo dpkg -i build/*.deb
 % elif (($CPKG_IS_PKGSRC)); then
-	@sudo -s -- " \
+	@sudo -- $(SHELL) -c  " \
 	    pkg_add \
 	        -U \
 	        %{ $PKGSRC_DIR/packages/All/${PKG_NAME}-${PKG_VER}.tgz }% \
