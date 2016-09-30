@@ -1,3 +1,5 @@
+% PNAME=${PRJ_NAME^^}
+% PNAME=${PNAME//-/_}
 % if [[ $CPKG_OS == "Linux" ]]; then
 MAKEFLAGS=--no-print-directory
 % fi
@@ -17,15 +19,6 @@ all: build-project
 
 build-project:
 	@$(MAKE) $(CB_JOBS) -C build
-
-iwyu:
-	@rm -rf iwyu && mkdir iwyu
-	@cd iwyu && ( \
-		env \
-		   CC="clang" CXX="clang++" \
-		   cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE ../sources; \
-		iwyu_tool -p .
-	)
 
 % declare -a BIN_TARGETS
 %
@@ -133,7 +126,16 @@ coverage-report-jenkins:
 	)
 
 doc:
-	@cd build/doc && doxygen 2> doxygen.log
+	@cd build/doc && ( \
+		doxygen 2> doxygen.log; \
+		find \
+		    . \
+		    -type f \
+		| xargs grep -l %{ ${PNAME} }%_API \
+		| while read F; do \
+		    sed -i"" -e "s/%{ ${PNAME} }%_API *//g" $$F; \
+		done; \
+	)
 
 % if (($CPKG_IS_DEB)); then
 package: build-project

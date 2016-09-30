@@ -135,7 +135,6 @@ declare -A PRJ_HAS=(
 PKG_AUTHOR="Lazy Programmer <eat@joes.com>"
 PRJ_SRCDIR=$TOPDIR/sources
 PRJ_BUILDDIR=$TOPDIR/build
-PRJ_IWYUDIR=$TOPDIR/iwyu
 PRJ_BATSDIR=$TOPDIR/bats
 PRJ_HAS_BATS=0
 PRJ_ETCDIR=$TOPDIR/etc
@@ -1817,11 +1816,6 @@ function cb_run_generator() {
         s,Building C .*\.dir/(.*)\.o,  [CC ] \1,
         s,Linking .*/(bin|lib/plugins|lib|t)/(.*),  [LD ] \1/\2,
     " ${MAKEFILES[@]}
-}
-
-function cb_run_iwyu() {
-    mkdir -p $PRJ_IWYUDIR
-    $CB_GEN "${GENOPTS[@]}" $PRJ_SRCDIR
 }
 
 function cb_configure() {
