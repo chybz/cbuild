@@ -757,35 +757,25 @@ function cb_scan() {
 }
 
 function cb_find_std_headers() {
-    local KEYWORD
-    local CXX_INCDIR
+    local FILTER
 
-    if (($CB_CC_IS_GCC)); then
-        KEYWORD="install: "
-    elif (($CB_CC_IS_CLANG)); then
-        KEYWORD="libraries: ="
+    if (($CB_CC_IS_CLANG)); then
+        FILTER="c\+\+|clang"
+    elif (($CB_CC_IS_GCC)); then
+        FILTER="c\+\+|gcc"
     fi
 
     local INCDIRS=$(
-        $CB_CPP -print-search-dirs 2>&1 | \
-        grep "^$KEYWORD"
+        $CB_CPP -xc++ -Wp,-v -fsyntax-only </dev/null 2>&1 \
+        | egrep "^ /" \
+        | egrep "($FILTER)" \
+        | xargs
     )
-
-    INCDIRS=${INCDIRS##$KEYWORD}
-    INCDIRS=${INCDIRS//:/ }
-
-    if (($CB_CC_IS_CLANG)); then
-        CXX_INCDIR=${INCDIRS%%/clang*}
-        CXX_INCDIR+="/c++/v1"
-    fi
 
     local INCDIR
     local INC
 
     for INCDIR in $INCDIRS; do
-        INCDIR=${INCDIR%/}
-        INCDIR+="/include"
-
         [ -d $INCDIR ] || continue
 
         for INC in $(cp_find_rel $INCDIR); do
@@ -800,22 +790,6 @@ function cb_find_std_headers() {
                 continue
             fi
 
-            STD_HEADERS[$INC]=1
-        done
-    fi
-
-    if (($CB_CC_IS_GCC)); then
-        CXX_INCDIR=$(
-            $CB_CC -v 2>&1 | \
-            grep "^Configured with: "
-        )
-        CXX_INCDIR=${CXX_INCDIR##*--with-gxx-include-dir=}
-        CXX_INCDIR=${CXX_INCDIR%% *}
-        CXX_INCDIR=${CXX_INCDIR%/}
-    fi
-
-    if [ -d $CXX_INCDIR ]; then
-        for INC in $(cp_find_rel $CXX_INCDIR); do
             STD_HEADERS[$INC]=1
         done
     fi
