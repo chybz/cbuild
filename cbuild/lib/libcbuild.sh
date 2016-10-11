@@ -797,8 +797,6 @@ function cb_find_std_headers() {
 function cb_configure_compiler_flags() {
     set +e
 
-    CB_CXXFLAGS+=("-Wno-unused-local-typedef")
-
     if ((${PRJ_OPTS[timings]})); then
         CB_GEN_FLAGS+=("-Q" "-ftime-report")
     fi
@@ -812,6 +810,7 @@ function cb_configure_compiler_flags() {
     fi
 
     if (($CB_CC_IS_CLANG)); then
+        CB_CXXFLAGS+=("-Wno-unused-local-typedef")
         CB_CXXFLAGS+=("-stdlib=libc++" "-ftemplate-depth=512")
         CB_CXXFLAGS+=("-Qunused-arguments" "-fcolor-diagnostics")
         CB_CFLAGS+=("-Qunused-arguments" "-fcolor-diagnostics")
