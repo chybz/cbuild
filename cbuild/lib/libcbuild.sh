@@ -885,7 +885,7 @@ function cb_configure_compiler_flags() {
     elif ((${PRJ_OPTS[optimize]})); then
         CB_GEN_FLAGS+=("-O3")
     else
-        CB_GEN_FLAGS+=("-Og")
+        CB_GEN_FLAGS+=("-O0")
     fi
 
     if [[ $CPKG_BIN_ARCH == "x86_64" ]]; then
