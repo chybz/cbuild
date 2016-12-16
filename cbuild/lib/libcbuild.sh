@@ -889,16 +889,16 @@ function cb_configure_compiler_flags() {
     fi
 
     if [[ $CPKG_BIN_ARCH == "x86_64" ]]; then
-        CB_GEN_FLAGS+=(
-            "-msse" "-msse2"
-            "-msse3" "-mssse3"
-            "-msse4.1" "-msse4.2"
-        )
-
         if ((${PRJ_OPTS[avx2]})); then
-            CB_GEN_FLAGS=("-mavx2" "-mbmi2")
+            CB_GEN_FLAGS+=("-mavx2" "-mbmi2")
         elif ((${PRJ_OPTS[avx]})); then
-            CB_GEN_FLAGS=("-mavx")
+            CB_GEN_FLAGS+=("-mavx")
+        else
+            CB_GEN_FLAGS+=(
+                "-msse" "-msse2"
+                "-msse3" "-mssse3"
+                "-msse4.1" "-msse4.2"
+            )
         fi
 
         (($CB_CC_IS_GCC)) && CB_GEN_FLAGS+=("-mfpmath=sse")
