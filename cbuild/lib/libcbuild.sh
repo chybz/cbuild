@@ -896,10 +896,9 @@ function cb_configure_compiler_flags() {
         )
 
         if ((${PRJ_OPTS[avx2]})); then
-            CB_GEN_FLAGS+=("-mavx")
-            CB_GEN_FLAGS+=("-mavx2")
+            CB_GEN_FLAGS=("-mavx2" "-mbmi2")
         elif ((${PRJ_OPTS[avx]})); then
-            CB_GEN_FLAGS+=("-mavx")
+            CB_GEN_FLAGS=("-mavx")
         fi
 
         (($CB_CC_IS_GCC)) && CB_GEN_FLAGS+=("-mfpmath=sse")
