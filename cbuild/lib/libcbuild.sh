@@ -103,6 +103,7 @@ declare -A TARGET_LIBDIRS
 declare -A HLIB_TARGET_MAP
 declare -A PLIB_TARGET_MAP
 declare -A NOINST_TARGET_MAP
+declare -A NOINST_PKG_MAP
 declare -A NOT_FOUND_MAP
 declare -A STD_HEADERS
 declare -a PRJ_HEADER_DIRS
@@ -660,6 +661,23 @@ function cb_scan_target() {
     cp_msg "$TYPE $NAME"
 }
 
+function cb_active_target() {
+    local TYPE=$1
+    local NAME=$2
+
+    local TYPE_DIR=${TYPE_DIRS[$TYPE]}
+
+    if [[ \
+        -f $PRJ_SRCDIR/${TYPE_DIRS[INC]}/$NAME/.cbuild_skip \
+        || \
+        -f $PRJ_SRCDIR/$TYPE_DIR/$NAME/.cbuild_skip \
+    ]]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
 function cb_scan_targets() {
     local TYPE=$1
 
@@ -684,6 +702,8 @@ function cb_scan_targets() {
         for NAME in $PRJ_SRCDIR/${TYPE_DIRS[INC]}/*; do
             NAME=$(basename $NAME)
 
+            cb_active_target $TYPE $NAME || continue
+
             if [ \
                 ! -d $PRJ_SRCDIR/${TYPE_DIRS[INC]}/$NAME \
                 -o \
@@ -702,6 +722,8 @@ function cb_scan_targets() {
 
     for NAME in $PRJ_SRCDIR/$TYPE_DIR/*; do
         NAME=$(basename $NAME)
+
+        cb_active_target $TYPE $NAME || continue
 
         if [ ! -d $PRJ_SRCDIR/$TYPE_DIR/$NAME ]; then
             # Ignore all but directories
@@ -1045,6 +1067,8 @@ function cb_install_pkg() {
     local FDEP=$3
     local PKG=$4
 
+    ((${NOINST_PKG_MAP[$PKG]})) && return 0
+
     if ! lp_is_pkg_installed $PKG; then
         local LABEL="Target $TYPE $TARGET depends on header '$FDEP'"
         LABEL+=", but it was not found on this system.\n\n"
@@ -1059,6 +1083,7 @@ function cb_install_pkg() {
             NEED_RESCAN=1
             return 0
         else
+            NOINST_PKG_MAP[$PKG]=1
             return 1
         fi
     fi
@@ -1484,17 +1509,17 @@ function cb_configure_target_link() {
 
     (($TCMALLOC)) && LIBS+=("tcmalloc")
 
-    if (($JEMALLOC)); then
-        local PKG=${CB_JEMALLOC_PKGS[$CPKG_OS]}
+    # if (($JEMALLOC)); then
+    #     local PKG=${CB_JEMALLOC_PKGS[$CPKG_OS]}
 
-        if [ -n "$PKG" ]; then
-            LIBS+=("jemalloc")
+    #     if [ -n "$PKG" ]; then
+    #         LIBS+=("jemalloc")
 
-            if ! lp_is_pkg_installed $PKG; then
-                lp_install_packages $PKG
-            fi
-        fi
-    fi
+    #         if ! lp_is_pkg_installed $PKG; then
+    #             lp_install_packages $PKG
+    #         fi
+    #     fi
+    # fi
 
     cb_save_target_list \
         $TYPE $TARGET "TARGET_LIBS" \
