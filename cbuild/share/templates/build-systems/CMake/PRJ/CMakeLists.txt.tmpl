@@ -98,17 +98,6 @@ install(
 )
 
 install(
-    PROGRAMS ../build/bin/%{ $PRJ_NAME }%-config
-    DESTINATION bin
-)
-
-add_custom_target(
-    %{ ${PRJ_NAME} }%_config_man
-    ALL
-    COMMAND pod2man -n %{ $PRJ_NAME }%-config ../build/bin/%{ $PRJ_NAME }%-config ../build/man/%{ $PRJ_NAME }%-config.1
-)
-
-install(
     DIRECTORY ../build/man/
     DESTINATION %{ ${PKG_MANDIR//$CPKG_PREFIX\//} }%/man1
     OPTIONAL
