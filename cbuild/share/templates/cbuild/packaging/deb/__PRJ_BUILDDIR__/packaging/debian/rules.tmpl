@@ -1,6 +1,6 @@
 %{Bash}%
 OPTS["chmod"]="0755"
-OPTS["process"]=$((${PRJ_HAS["LIB"]}))
+OPTS["process"]=$((${PRJ_HAS["LIB"]} || ${PRJ_HAS["PLUG"]})) 
 %{/Bash}%
 % if ((${OPTS["process"]})); then
 #!/usr/bin/make -f
