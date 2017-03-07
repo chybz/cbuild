@@ -53,12 +53,4 @@
 
 #define %{ ${PNAME} }%_LOCAL %{ ${PNAME} }%_LOCAL_HELPER
 
-#ifndef _BOOST_TIME_UTC
-  #if BOOST_VERSION >= 105000
-    #define _BOOST_TIME_UTC boost::TIME_UTC_
-  #else
-    #define _BOOST_TIME_UTC boost::TIME_UTC
-  #endif
-#endif
-
 #endif /* __%{ ${PNAME} }%_CONFIG_H__ */
