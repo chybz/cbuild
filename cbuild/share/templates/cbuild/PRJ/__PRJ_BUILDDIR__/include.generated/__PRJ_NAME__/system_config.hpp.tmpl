@@ -93,6 +93,12 @@ public:
     plugin_list find_plugins()
     { return find_plugins(plugins_dir_); }
 
+    plugin_list find_external_plugins(const std::string& name)
+    {
+        std::string dir = sys_lib_dir_ + "/" + name + "/plugins";
+        return find_plugins(dir);
+    }
+
     const std::string& get_dir(const std::string& which) const {
         directory_map::const_iterator it;
 
