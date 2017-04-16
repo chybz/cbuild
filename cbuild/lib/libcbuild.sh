@@ -235,12 +235,11 @@ CB_EMPTY_DIR=$CB_STATE_DIR/empty-dir
 CB_LOG_DIR=$CB_STATE_DIR/log
 
 CB_COMMON_SCAN_ARGS="-x c++ -M -MG -MT CBUILD_SOURCE"
-CB_COMMON_SCAN_ARGS+=" -nostdinc -nostdinc++"
 CB_COMMON_SCAN_ARGS+=" -DCBUILD_SCAN -D${CPKG_PF^^} -D${CPKG_OS^^}"
 CB_COMMON_SCAN_ARGS+=" -I$CB_EMPTY_DIR"
 
 declare -A CB_SCAN_ARGS=(
-    [Linux]="$CB_COMMON_SCAN_ARGS"
+    [Linux]="$CB_COMMON_SCAN_ARGS -nostdinc -nostdinc++"
     [Darwin]="$CB_COMMON_SCAN_ARGS"
 )
 
@@ -1016,6 +1015,10 @@ function cb_configure_compiler() {
 function cb_make_scan_cmd() {
     local CMD="$CB_CC ${CB_SCAN_ARGS[$CPKG_OS]}"
 
+    if [[ ${PRJ_OPTS[std]} ]]; then
+        CMD+=" -std=${PRJ_OPTS[std]}"
+    fi
+
     if (($CB_CC_IS_CLANG)); then
         CMD+=" -w"
     fi
@@ -1180,13 +1183,23 @@ function cb_scan_target_files() {
         cd $DIR
 
         # Get dependency info from compiler
-        local ALLDEPS=$(
-            $SCAN_CMD ${FILES[@]} 2>$CB_LOG_DIR/scan.log | \
+        $SCAN_CMD ${FILES[@]} 2>$CB_LOG_DIR/scan.log | \
             $CB_CPP -P | \
             cp_run_sed ${CLEAN_EXPRS[@]} | \
             tr -s ' ' | tr ' ' '\n' | \
-            sort | uniq | xargs
-        )
+            sort | uniq > $CB_LOG_DIR/all-deps.txt
+
+        local ALLDEPS
+
+        if [[ $CPKG_OS == "Linux" ]]; then
+            ALLDEPS=$(cat $CB_LOG_DIR/all-deps.txt | xargs)
+        elif [[ $CPKG_OS == "Darwin" ]]; then
+            ALLDEPS=$(
+                cat $CB_LOG_DIR/all-deps.txt | \
+                egrep -v "^(/usr/include|/Applications)" | \
+                xargs
+            )
+        fi
 
         [[ ! -s $CB_LOG_DIR/scan.log ]] || cat $CB_LOG_DIR/scan.log
 
