@@ -47,6 +47,7 @@ public:
             lib_dir_ = %{ ${PRJ_DEFPREFIX} }%LIBDIR;
             share_dir_ = %{ ${PRJ_DEFPREFIX} }%SHAREDIR;
             var_lib_dir_ = %{ ${PRJ_DEFPREFIX} }%VARDIR;
+            sys_var_lib_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSVARDIR;
             var_log_dir_ = %{ ${PRJ_DEFPREFIX} }%LOGDIR;
             var_run_dir_ = %{ ${PRJ_DEFPREFIX} }%RUNDIR;
             plugins_dir_ = %{ ${PRJ_DEFPREFIX} }%PLUGDIR;
@@ -69,6 +70,7 @@ public:
             lib_dir_ = build_dir + "/" + "lib";
             share_dir_ = root_dir + "/" + "share";
             var_lib_dir_ = build_dir + "/" + "var/lib";
+            sys_var_lib_dir_ = build_dir + "/" + "var/lib_";
             var_log_dir_ = build_dir + "/" + "var/log";
             var_run_dir_ = build_dir + "/" + "var/run";
             plugins_dir_ = lib_dir_ + "/" + "plugins";
@@ -85,6 +87,7 @@ public:
         directory_map_["lib"] = lib_dir_;
         directory_map_["share"] = share_dir_;
         directory_map_["var_lib"] = var_lib_dir_;
+        directory_map_["sys_var_lib"] = sys_var_lib_dir_;
         directory_map_["var_log"] = var_log_dir_;
         directory_map_["var_run"] = var_run_dir_;
         directory_map_["plugins"] = plugins_dir_;
@@ -92,6 +95,12 @@ public:
 
     plugin_list find_plugins()
     { return find_plugins(plugins_dir_); }
+
+    plugin_list find_external_plugins(const std::string& name)
+    {
+        std::string dir = sys_lib_dir_ + "/" + name + "/plugins";
+        return find_plugins(dir);
+    }
 
     const std::string& get_dir(const std::string& which) const {
         directory_map::const_iterator it;
@@ -138,6 +147,9 @@ public:
 
     const std::string& var_lib_dir(void) const
     { return var_lib_dir_; }
+
+    const std::string& sys_var_lib_dir(void) const
+    { return sys_var_lib_dir_; }
 
     const std::string& var_log_dir(void) const
     { return var_log_dir_; }
@@ -219,6 +231,7 @@ private:
     std::string lib_dir_;
     std::string share_dir_;
     std::string var_lib_dir_;
+    std::string sys_var_lib_dir_;
     std::string var_log_dir_;
     std::string var_run_dir_;
     std::string plugins_dir_;

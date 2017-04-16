@@ -842,6 +842,13 @@ function cb_configure_compiler_flags() {
             CB_CXXFLAGS+=("-fdiagnostics-color=always")
             CB_CFLAGS+=("-fdiagnostics-color=always")
         fi
+
+        if [[ ${PRJ_OPTS[linker]} ]]; then
+            CB_CXXFLAGS+=("-fuse-ld=${PRJ_OPTS[linker]}")
+            CB_CFLAGS+=("-fuse-ld=${PRJ_OPTS[linker]}")
+            CB_BIN_LFLAGS+=("-fuse-ld=gold")
+            CB_LIB_LFLAGS+=("-fuse-ld=gold")
+        fi
     fi
 
     if (($CB_CC_IS_GCC)); then

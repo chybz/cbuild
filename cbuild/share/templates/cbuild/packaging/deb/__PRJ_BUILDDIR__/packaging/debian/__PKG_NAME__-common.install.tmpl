@@ -1,5 +1,6 @@
-usr/bin/%{ ${PKG_NAME} }%-config
-usr/share/man/man1/%{ ${PKG_NAME} }%-config.1
+%{Bash}%
+OPTS["process"]=$((${PRJ_HAS["ETCDIR"]} || ${PRJ_HAS["SHAREDIR"]}))
+%{/Bash}%
 % if ((${PRJ_HAS["ETCDIR"]})); then
 etc/%{ ${PKG_NAME} }%
 % fi
