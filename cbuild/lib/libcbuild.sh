@@ -237,9 +237,10 @@ CB_LOG_DIR=$CB_STATE_DIR/log
 CB_COMMON_SCAN_ARGS="-x c++ -M -MG -MT CBUILD_SOURCE"
 CB_COMMON_SCAN_ARGS+=" -DCBUILD_SCAN -D${CPKG_PF^^} -D${CPKG_OS^^}"
 CB_COMMON_SCAN_ARGS+=" -I$CB_EMPTY_DIR"
+CB_COMMON_SCAN_ARGS+=" -nostdinc -nostdinc++"
 
 declare -A CB_SCAN_ARGS=(
-    [Linux]="$CB_COMMON_SCAN_ARGS -nostdinc -nostdinc++"
+    [Linux]="$CB_COMMON_SCAN_ARGS"
     [Darwin]="$CB_COMMON_SCAN_ARGS"
 )
 
