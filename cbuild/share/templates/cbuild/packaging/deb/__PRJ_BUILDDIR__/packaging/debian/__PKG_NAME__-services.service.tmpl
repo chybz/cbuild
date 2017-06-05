@@ -1,0 +1,26 @@
+%{Bash}%
+if [[ ! $SYSTEMD_SVC ]]; then
+    if ((${PRJ_HAS["SVC"]})); then
+        OPTS["recall-foreach"]="SYSTEMD_SVC ${PRJ_SVCS[@]}"
+        OPTS["label"]="generating systemd unit files"
+    else
+        OPTS["process"]=0
+    fi
+else
+%{/Bash}%
+[Unit]
+Description=Expandium %{ $PKG_NAME }% %{ $SYSTEMD_SVC }% service
+After=network.target
+
+[Service]
+User=%{ ${PRJ_USER} }%
+Type=simple
+ExecStart=/usr/bin/%{ $SYSTEMD_SVC }%
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutSec=0
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

@@ -47,6 +47,7 @@ OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
 OPTSPECS[y]="CB_YES::assume yes:no"
 OPTSPECS[q]="TIMINGS::enable compiler timing:no"
 OPTSPECS[j]="CB_CPUS:NUMBER:number of CPUs to use:"
+OPTSPECS[s]="CB_SERVICES::enable system services:no"
 
 cp_get_options "$@"
 
@@ -67,6 +68,7 @@ PRJ_OPTS[coverage]=$COVERAGE
 PRJ_OPTS[profiling]=$PROFILING
 PRJ_OPTS[debug]=$CB_DEBUG
 PRJ_OPTS[timings]=$TIMINGS
+PRJ_OPTS[services]=$CB_SERVICES
 
 export CB_NO_SCAN
 

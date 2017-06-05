@@ -575,9 +575,13 @@ function cb_scan_target() {
             -REq \
             "^\s*//\s*cbuild-service:\s*yes\s*$" \
             $PRJ_SRCDIR/${TYPE_DIRS[$TYPE]}/$NAME/*; then
-            SVC_TARGETS+=($NAME)
-            PRJ_HAS["SVC"]=1
-            NOT_A_SERVICE=0
+            # Service candidate, active only when service support
+            # is enabled
+            if ((${PRJ_OPTS[services]})); then
+                SVC_TARGETS+=($NAME)
+                PRJ_HAS["SVC"]=1
+                NOT_A_SERVICE=0
+            fi
         fi
 
         for SOURCE in ${SOURCES[@]}; do
