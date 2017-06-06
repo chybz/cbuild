@@ -33,7 +33,7 @@ Description: debug symbols
 
 Package: %{ ${PKG_NAME} }%-services
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, svtools, daemontools, daemontools-run, %{ ${PKG_NAME}-common }%
+Depends: ${shlibs:Depends}, ${misc:Depends}, %{ ${PKG_NAME}-common }%
 Description: services
  %{ ${PKG_SHORTDESC} }% system services
  .

@@ -2,7 +2,7 @@
 OPTS["process"]=$((${PRJ_HAS["SVC"]}))
 %{/Bash}%
 % if ((${OPTS["process"]})); then
-%{ ${PKG_NAME} }%-services: hardening-no-fortify-functions
-%{ ${PKG_NAME} }%-services: new-package-should-close-itp-bug
-%{ ${PKG_NAME} }%-services: init.d-script-does-not-implement-required-option
+%{ ${PKG_NAME} }%-services-dbg: hardening-no-fortify-functions
+%{ ${PKG_NAME} }%-services-dbg: new-package-should-close-itp-bug
+%{ ${PKG_NAME} }%-services-dbg: package-has-long-file-name
 % fi
