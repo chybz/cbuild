@@ -1,12 +1,16 @@
 %{Bash}%
 OPTS["chmod"]="0755"
-OPTS["process"]=$((${PRJ_HAS["LIB"]} || ${PRJ_HAS["PLUG"]})) 
+OPTS["process"]=$((${PRJ_HAS["LIB"]} || ${PRJ_HAS["PLUG"]}))
 %{/Bash}%
 % if ((${OPTS["process"]})); then
 #!/usr/bin/make -f
 
 %{ % }%:
+% if ((${PRJ_HAS["SVC"]})); then
+	dh $@ --with=systemd
+% else
 	dh $@
+% fi
 
 % if ((${#PRJ_MANPAGES[@]})); then
 override_dh_auto_build-indep:

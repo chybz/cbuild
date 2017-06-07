@@ -3,7 +3,11 @@ Source: %{ ${PKG_NAME} }%
 Section: %{ ${PKG_CAT} }%
 Priority: optional
 Maintainer: %{ ${PKG_AUTHOR_NAME} }% <%{ ${PKG_AUTHOR_EMAIL} }%>
+% if ((${PRJ_HAS["SVC"]})); then
+Build-Depends: debhelper (>= 9), dh-systemd, build-essential, perl
+% else
 Build-Depends: debhelper (>= 9), build-essential, perl
+% fi
 Standards-Version: 3.7.2
 
 Package: %{ ${PKG_NAME}-common }%
