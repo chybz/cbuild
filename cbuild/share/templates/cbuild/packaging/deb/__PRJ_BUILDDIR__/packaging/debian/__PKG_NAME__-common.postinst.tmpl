@@ -30,7 +30,7 @@ if [ "$1" = "configure" ]; then
             --quiet \
             --system \
             --group \
-            --home <% $ARGS{var_lib_dir} %> \
+            --home %{ ${PKG_VARDIR} }% \
             --no-create-home \
             --shell /bin/bash \
             $PKG_USER
