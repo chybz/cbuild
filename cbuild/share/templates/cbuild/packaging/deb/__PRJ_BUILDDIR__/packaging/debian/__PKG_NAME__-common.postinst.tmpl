@@ -22,6 +22,11 @@ function make_dir() {
 }
 
 if [ "$1" = "configure" ]; then
+    # Create system directories and fix permissions
+    make_dir %{ ${PKG_VARDIR} }%
+    make_dir %{ ${PKG_LOGDIR} }%
+    make_dir %{ ${PKG_RUNDIR} }%
+
 %     if [ $PRJ_USER != "root" ]; then
     if [ -z "$2" ]; then
         # Install
@@ -39,10 +44,6 @@ if [ "$1" = "configure" ]; then
     fi
 
 %     fi
-    # Create system directories and fix permissions
-    make_dir %{ ${PKG_VARDIR} }%
-    make_dir %{ ${PKG_LOGDIR} }%
-    make_dir %{ ${PKG_RUNDIR} }%
 fi
 
 #DEBHELPER#
