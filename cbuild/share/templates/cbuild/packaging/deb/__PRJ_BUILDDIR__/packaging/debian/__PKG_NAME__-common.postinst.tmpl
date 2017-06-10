@@ -35,7 +35,7 @@ if [ "$1" = "configure" ]; then
             --shell /bin/bash \
             $PKG_USER
 
-        usermod -a -G expand %{ ${PKG_VARDIR} }%
+        usermod -a -G expand $PKG_USER
     fi
 
 %     fi
