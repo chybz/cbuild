@@ -843,7 +843,7 @@ function cb_configure_compiler_flags() {
     elif (($CB_CC_IS_GCC)); then
         local VER=$($CB_CC -v 2>&1 | grep "gcc version" | cut -d ' ' -f 3)
 
-        if [[ "$VER" =~ ^6\. ]]; then
+        if [[ "$VER" =~ ^[678]\. ]]; then
             CB_CXXFLAGS+=("-fdiagnostics-color=always")
             CB_CFLAGS+=("-fdiagnostics-color=always")
         fi
