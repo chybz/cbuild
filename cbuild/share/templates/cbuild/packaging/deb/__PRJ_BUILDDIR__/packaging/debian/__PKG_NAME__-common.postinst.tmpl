@@ -21,10 +21,8 @@ function make_dir() {
     fi
 }
 
-if [ "$1" = "configure" ]; then
-%     if [ $PRJ_USER != "root" ]; then
-    if [ -z "$2" ]; then
-        # Install
+function create_user() {
+    if ! id $PKG_USER >/dev/null 2>&1; then
         echo "creating $PKG_USER system user"
         adduser \
             --quiet \
@@ -34,9 +32,16 @@ if [ "$1" = "configure" ]; then
             --no-create-home \
             --shell /bin/bash \
             $PKG_USER
-
-        usermod -a -G expand $PKG_USER
     fi
+
+    usermod -a -G expand $PKG_USER
+    groupadd -f $PKG_GROUP
+    usermod -a -G $PKG_GROUP $PKG_USER
+}
+
+if [ "$1" = "configure" ]; then
+%     if [ $PRJ_USER != "root" ]; then
+    create_user
 
 %     fi
     # Create system directories and fix permissions
