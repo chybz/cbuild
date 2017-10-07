@@ -785,7 +785,7 @@ function cb_find_std_headers() {
     local FILTER
 
     if (($CB_CC_IS_CLANG)); then
-        FILTER="c\+\+|clang"
+        FILTER="c\+\+|clang|include"
     elif (($CB_CC_IS_GCC)); then
         FILTER="c\+\+|gcc"
     fi
