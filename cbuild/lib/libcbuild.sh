@@ -1311,6 +1311,15 @@ function cb_scan_target_files() {
                 PKG=$(lp_pkg_from_header $FDEP)
 
                 if [[ "$PKG" ]]; then
+                    # Ensure this is not an (earlier) installed version of
+                    # the current project
+                    if [[ "$PKG" =~ ^(lib)?${PKG_NAME}(-.*)?$ ]]; then
+                        cp_error \
+                            "include file $FDEP" \
+                            " was found in installed package $PKG" \
+                            " and not in current project"
+                    fi
+
                     FOUND=$(($FOUND + 1))
 
                     # Ensure package is installed
