@@ -14,4 +14,7 @@ rm -rf cpkg-master
 unzip cpkg-master.zip
 cd cpkg-master
 ./utils/autoinst.sh
+echo "================="
+cat Makefile
+echo "================="
 cd $MYTOPDIR
