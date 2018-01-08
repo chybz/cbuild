@@ -85,39 +85,39 @@ declare -A TYPE_DIRS=(
     [PLUG]=plugins
     [INC]=include
 )
-declare -a BIN_TARGETS
-declare -a BIN_ONLY_TARGETS
-declare -a SVC_TARGETS
-declare -a TST_TARGETS
-declare -a LIB_TARGETS
-declare -a PLUG_TARGETS
-declare -A PLUG_CLASSES
-declare -A TARGET_TYPE_MAP
-declare -A TARGET_HEADER_MAP
-declare -A TARGET_DEP_MAP
-declare -A TARGET_PKGDEP_MAP
-declare -A TARGET_PCDEP_MAP
-declare -A TARGET_RUNTIME_PCDEP_MAP
-declare -A TARGET_DEP_HIST
-declare -A TARGET_LIBDIRS
-declare -A HLIB_TARGET_MAP
-declare -A PLIB_TARGET_MAP
-declare -A NOINST_TARGET_MAP
-declare -A NOINST_PKG_MAP
-declare -A NOT_FOUND_MAP
-declare -A STD_HEADERS
-declare -a PRJ_HEADER_DIRS
-declare -A PRJ_MANPAGES
-declare -A PRJ_LOCAL_PKGCONFIGS
-declare -A PRJ_OPTS
-declare -a PRJ_CFLAGS
-declare -a PRJ_CXXFLAGS
-declare -a PRJ_LFLAGS
-declare -A PRJ_PKGS
-declare -A PRJ_RUNTIME_PKGS
-declare -A PRJ_AUTOLINK
-declare -a PRJ_NOCOV
-declare -a PRJ_PRIVATE_LIBS
+declare -a BIN_TARGETS=()
+declare -a BIN_ONLY_TARGETS=()
+declare -a SVC_TARGETS=()
+declare -a TST_TARGETS=()
+declare -a LIB_TARGETS=()
+declare -a PLUG_TARGETS=()
+declare -A PLUG_CLASSES=()
+declare -A TARGET_TYPE_MAP=()
+declare -A TARGET_HEADER_MAP=()
+declare -A TARGET_DEP_MAP=()
+declare -A TARGET_PKGDEP_MAP=()
+declare -A TARGET_PCDEP_MAP=()
+declare -A TARGET_RUNTIME_PCDEP_MAP=()
+declare -A TARGET_DEP_HIST=()
+declare -A TARGET_LIBDIRS=()
+declare -A HLIB_TARGET_MAP=()
+declare -A PLIB_TARGET_MAP=()
+declare -A NOINST_TARGET_MAP=()
+declare -A NOINST_PKG_MAP=()
+declare -A NOT_FOUND_MAP=()
+declare -A STD_HEADERS=()
+declare -a PRJ_HEADER_DIRS=()
+declare -A PRJ_MANPAGES=()
+declare -A PRJ_LOCAL_PKGCONFIGS=()
+declare -A PRJ_OPTS=()
+declare -a PRJ_CFLAGS=()
+declare -a PRJ_CXXFLAGS=()
+declare -a PRJ_LFLAGS=()
+declare -A PRJ_PKGS=()
+declare -A PRJ_RUNTIME_PKGS=()
+declare -A PRJ_AUTOLINK=()
+declare -a PRJ_NOCOV=()
+declare -a PRJ_PRIVATE_LIBS=()
 declare -A PRJ_HAS=(
     [BIN]=0
     [BIN_ONLY]=0
@@ -246,13 +246,13 @@ declare -A CB_SCAN_ARGS=(
 
 CB_SCAN_ORDER="LIB PLUG BIN TST"
 
-declare -a CB_GEN_FLAGS
-declare -a CB_LFLAGS
-declare -a CB_BIN_LFLAGS
-declare -a CB_LIB_CFLAGS
-declare -a CB_LIB_LFLAGS
-declare -a CB_CFLAGS
-declare -a CB_CXXFLAGS
+declare -a CB_GEN_FLAGS=()
+declare -a CB_LFLAGS=()
+declare -a CB_BIN_LFLAGS=()
+declare -a CB_LIB_CFLAGS=()
+declare -a CB_LIB_LFLAGS=()
+declare -a CB_CFLAGS=()
+declare -a CB_CXXFLAGS=()
 
 # Default compiler commands
 export CB_CPP=""
@@ -264,8 +264,8 @@ export CB_GCOV=""
 export CB_GEN=""
 
 # Load autolink definitions
-declare -A CB_AUTOLINK
-declare -A CB_AUTOLINK_GROUP
+declare -A CB_AUTOLINK=()
+declare -A CB_AUTOLINK_GROUP=()
 
 function cb_check_conf() {
     if [[ -f $CBUILD_CONF ]]; then

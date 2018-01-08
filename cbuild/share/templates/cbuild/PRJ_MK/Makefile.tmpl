@@ -20,7 +20,7 @@ all: build-project
 build-project:
 	@$(MAKE) $(CB_JOBS) -C build
 
-% declare -a BIN_TARGETS
+% declare -a BIN_TARGETS=()
 %
 % for TARGET in ${PRJ_BINS[@]}; do
 %     TARGET=bin_${TARGET}
@@ -32,7 +32,7 @@ build-project:
 
 binaries: %{ ${BIN_TARGETS[@]} }%
 
-% declare -a LIB_TARGETS
+% declare -a LIB_TARGETS=()
 %
 % for TARGET in ${PRJ_LIBS[@]}; do
 %     if [[ "${HLIB_TARGET_MAP[$TARGET]}" ]]; then
@@ -48,7 +48,7 @@ binaries: %{ ${BIN_TARGETS[@]} }%
 
 libraries: %{ ${LIB_TARGETS[@]} }%
 
-% declare -a PLUG_TARGETS
+% declare -a PLUG_TARGETS=()
 %
 % for TARGET in ${PRJ_PLUGS[@]}; do
 %     TARGET=plug_${TARGET}
@@ -60,7 +60,7 @@ libraries: %{ ${LIB_TARGETS[@]} }%
 
 plugins: %{ ${PLUG_TARGETS[@]} }%
 
-% declare -a TST_TARGETS
+% declare -a TST_TARGETS=()
 %
 % for TARGET in ${PRJ_TSTS[@]}; do
 %     TARGET=tst_${TARGET}

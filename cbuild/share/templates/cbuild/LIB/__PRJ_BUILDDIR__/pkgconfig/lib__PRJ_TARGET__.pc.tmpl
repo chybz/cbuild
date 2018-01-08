@@ -27,7 +27,7 @@ Requires: %{ $(cp_join " " ${REQS[@]}) }%
 %     fi
 %
 %     LNK=()
-%     declare -A LNK_MAP
+%     declare -A LNK_MAP=()
 %
 %     if ((${#SOURCES} > 0)); then
 %         LNK+=("-L\${libdir}" "-l${TARGET_OUTPUT_NAME}")
