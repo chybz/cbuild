@@ -999,7 +999,7 @@ function cb_configure_compiler() {
 
     local CCVARS=$CB_STATE_DIR/PRJ/CCVARS
     cp_save_list "CB_GEN_FLAGS" $CCVARS ${CB_GEN_FLAGS[@]}
-    cp_save_list "CB_OPT_FLAGS" $CCVARS ${CB_OPT_FLAGS[@]}
+    cp_save_list "CB_OPT_FLAGS" "+$CCVARS" ${CB_OPT_FLAGS[@]}
     cp_save_list "CB_LFLAGS" "+$CCVARS" ${CB_LFLAGS[@]}
     cp_save_list "CB_BIN_LFLAGS" "+$CCVARS" ${CB_BIN_LFLAGS[@]}
     cp_save_list "CB_LIB_CFLAGS" "+$CCVARS" ${CB_LIB_CFLAGS[@]}
