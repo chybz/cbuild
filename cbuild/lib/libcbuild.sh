@@ -247,6 +247,7 @@ declare -A CB_SCAN_ARGS=(
 CB_SCAN_ORDER="LIB PLUG BIN TST"
 
 declare -a CB_GEN_FLAGS=()
+declare -a CB_OPT_FLAGS=()
 declare -a CB_LFLAGS=()
 declare -a CB_BIN_LFLAGS=()
 declare -a CB_LIB_CFLAGS=()
@@ -923,20 +924,20 @@ function cb_configure_compiler_flags() {
 
     if [[ $CPKG_BIN_ARCH == "x86_64" ]]; then
         if ((${PRJ_OPTS[avx2]})); then
-            CB_GEN_FLAGS+=("-mavx2" "-mbmi2")
+            CB_OPT_FLAGS+=("-mavx2" "-mbmi2")
         elif ((${PRJ_OPTS[avx]})); then
-            CB_GEN_FLAGS+=("-mavx")
+            CB_OPT_FLAGS+=("-mavx")
         else
-            CB_GEN_FLAGS+=(
+            CB_OPT_FLAGS+=(
                 "-msse" "-msse2"
                 "-msse3" "-mssse3"
                 "-msse4.1" "-msse4.2"
             )
         fi
 
-        (($CB_CC_IS_GCC)) && CB_GEN_FLAGS+=("-mfpmath=sse")
+        (($CB_CC_IS_GCC)) && CB_OPT_FLAGS+=("-mfpmath=sse")
     elif [[ $CPKG_BIN_ARCH == "i386" ]]; then
-        CB_GEN_FLAGS+=(
+        CB_OPT_FLAGS+=(
             "-march=prescott"
             "-msse" "-msse2" "-msse3"
             "-mfpmath=sse"
@@ -998,6 +999,7 @@ function cb_configure_compiler() {
 
     local CCVARS=$CB_STATE_DIR/PRJ/CCVARS
     cp_save_list "CB_GEN_FLAGS" $CCVARS ${CB_GEN_FLAGS[@]}
+    cp_save_list "CB_OPT_FLAGS" $CCVARS ${CB_OPT_FLAGS[@]}
     cp_save_list "CB_LFLAGS" "+$CCVARS" ${CB_LFLAGS[@]}
     cp_save_list "CB_BIN_LFLAGS" "+$CCVARS" ${CB_BIN_LFLAGS[@]}
     cp_save_list "CB_LIB_CFLAGS" "+$CCVARS" ${CB_LIB_CFLAGS[@]}
@@ -1033,6 +1035,10 @@ function cb_make_scan_cmd() {
 
     if (($CB_CC_IS_CLANG)); then
         CMD+=" -w"
+    fi
+
+    if ((${#CB_OPT_FLAGS[@]} != 0)); then
+        CMD+=" ${CB_OPT_FLAGS[@]}"
     fi
 
     mkdir -p $CB_EMPTY_DIR
