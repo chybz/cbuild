@@ -1,0 +1,10 @@
+% if ((${PRJ_AUTOLINK["PFRING"]})); then
+Name: libpfring
+Description: Wrapper for Ntop pfring
+Version: 1
+Requires:
+Libs: -lpfring -lrt -ldl
+Cflags: -I/usr/local/include
+% else
+%     OPTS["process"]=0
+% fi
