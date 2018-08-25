@@ -824,6 +824,8 @@ function cb_find_std_headers() {
 function cb_configure_compiler_flags() {
     set +e
 
+    CB_GEN_FLAGS+=("-DBOOST_NO_AUTO_PTR")
+
     if ((${PRJ_OPTS[timings]})); then
         CB_GEN_FLAGS+=("-Q" "-ftime-report")
     fi
