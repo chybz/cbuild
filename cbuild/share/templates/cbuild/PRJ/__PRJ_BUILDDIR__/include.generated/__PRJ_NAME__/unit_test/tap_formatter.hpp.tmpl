@@ -155,11 +155,23 @@ public:
     void entry_context_start(std::ostream& ost, but::log_level l)
     {}
 
+#if BOOST_VERSION < 106600
     void log_entry_context(std::ostream& ost, but::const_string value)
     {}
 
     void entry_context_finish(std::ostream& ost)
     {}
+#else
+    void log_entry_context(
+        std::ostream& os,
+        but::log_level l,
+        but::const_string value
+    )
+    {}
+
+    void entry_context_finish(std::ostream& ost, but::log_level l)
+    {}
+#endif
 
 private:
     unsigned int current_test_;
