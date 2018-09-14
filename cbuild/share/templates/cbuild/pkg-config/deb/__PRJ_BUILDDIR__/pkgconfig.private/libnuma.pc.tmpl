@@ -1,0 +1,9 @@
+% if ((${PRJ_AUTOLINK["NUMA"]})); then
+Name: libnuma
+Description: Wrapper for OS specific NUMA library
+Version: 1
+Requires:
+Libs: -lnuma
+% else
+%     OPTS["process"]=0
+% fi
