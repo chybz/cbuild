@@ -36,7 +36,7 @@ public:
     {
         std::string path = exe_path();
 
-        if (path.find(%{ ${PRJ_DEFPREFIX} }%BINDIR) != std::string::npos) {
+        if (installed()) {
             // Program is in system 'bin' directory
             local_mode_ = false;
             etc_dir_ = %{ ${PRJ_DEFPREFIX} }%ETCDIR;
@@ -93,16 +93,33 @@ public:
         directory_map_["plugins"] = plugins_dir_;
     }
 
-    plugin_list find_plugins()
+    bool installed() const
+    {
+        std::string path = exe_path();
+        std::string sys_bin_dir = %{ ${PRJ_DEFPREFIX} }%BINDIR
+        std::string build_dir "%{ $PRJ_BUILDDIR }%"
+
+        return
+            // Current binary is installed so I'm installed
+            path.find(sys_bin_dir) != std::string::npos
+            ||
+            // Current binary is outside our build directory
+            path.find(build_dir) == std::string::npos
+            ;
+    }
+
+    plugin_list find_plugins() const
     { return find_plugins(plugins_dir_); }
 
-    plugin_list find_external_plugins(const std::string& name)
+    plugin_list find_external_plugins(const std::string& name) const
     {
         std::string dir = sys_lib_dir_ + "/" + name + "/plugins";
+
         return find_plugins(dir);
     }
 
-    const std::string& get_dir(const std::string& which) const {
+    const std::string& get_dir(const std::string& which) const
+    {
         directory_map::const_iterator it;
 
         if ((it = directory_map_.find(which)) != directory_map_.end()) {
@@ -163,7 +180,8 @@ public:
 private:
     typedef std::map<std::string, std::string> directory_map;
 
-    std::string exe_path(void) {
+    std::string exe_path(void) const
+    {
         char buf[PATH_MAX];
 
         ::memset(buf, 0, sizeof(buf));
@@ -190,7 +208,8 @@ private:
         return path;
     }
 
-    plugin_list find_plugins(const std::string& dir) {
+    plugin_list find_plugins(const std::string& dir) const
+    {
         plugin_list plugins;
 
         DIR* dirh;
