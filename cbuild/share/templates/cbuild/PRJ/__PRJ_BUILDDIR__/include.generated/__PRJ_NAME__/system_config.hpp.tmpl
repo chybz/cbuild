@@ -94,8 +94,8 @@ public:
     bool installed() const
     {
         std::string path = exe_path();
-        std::string sys_bin_dir = %{ ${PRJ_DEFPREFIX} }%BINDIR
-        std::string build_dir "%{ $PRJ_BUILDDIR }%"
+        std::string sys_bin_dir = %{ ${PRJ_DEFPREFIX} }%BINDIR;
+        std::string build_dir = "%{ $PRJ_BUILDDIR }%";
 
         return
             // Current binary is installed so I'm installed
