@@ -34,8 +34,6 @@ public:
     system_config()
     : local_mode_(false)
     {
-        std::string path = exe_path();
-
         if (installed()) {
             // Program is in system 'bin' directory
             local_mode_ = false;
