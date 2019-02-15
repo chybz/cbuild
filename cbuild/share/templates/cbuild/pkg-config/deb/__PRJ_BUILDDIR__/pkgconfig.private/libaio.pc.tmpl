@@ -1,0 +1,9 @@
+% if ((${PRJ_AUTOLINK["AIO"]})); then
+Name: libaio
+Description: Wrapper for OS specific libaio
+Version: 1
+Requires:
+Libs: -laio
+% else
+%     OPTS["process"]=0
+% fi
