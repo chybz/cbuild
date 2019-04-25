@@ -1,0 +1,10 @@
+% if ((${PRJ_AUTOLINK["HPX"]})); then
+Name: libhpx
+Description: High Performance ParalleX
+Version: 1.3.0
+Requires:
+Libs: -std=c++17 -lhpx_init -lhpx -ldl -lrt -lboost_atomic -lboost_filesystem -lboost_program_options -lboost_regex -lboost_system -lpthread -lboost_atomic -lboost_filesystem -lboost_program_options -lboost_regex -lboost_system -ljemalloc -lhwloc
+Cflags: -std=c++17 -I/usr/include/hpx/external -DHPX_APPLICATION_EXPORTS -DHPX_ENABLE_ASSERT_HANDLER
+% else
+%     OPTS["process"]=0
+% fi
