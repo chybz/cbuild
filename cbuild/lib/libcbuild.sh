@@ -860,9 +860,13 @@ function cb_configure_compiler_flags() {
     fi
 
     if (($CB_CC_IS_GCC)); then
-        CB_GEN_FLAGS+=("-g3" "-ggdb3" "-pthread")
+        CB_GEN_FLAGS+=("-g" "-pthread")
     else
         CB_GEN_FLAGS+=("-g")
+    fi
+
+    if ((${PRJ_OPTS[gdbindex]})); then
+        CB_GEN_FLAGS+=("-gsplit-dwarf")
     fi
 
     CB_GEN_FLAGS+=("-pipe" "-Wall")
@@ -891,6 +895,11 @@ function cb_configure_compiler_flags() {
     if (($CPKG_IS_DEB)); then
         CB_BIN_LFLAGS+=("-Wl,-z,relro" "-Wl,--as-needed")
         CB_LIB_LFLAGS+=("-Wl,-z,relro" "-Wl,--as-needed")
+    fi
+
+    if ((${PRJ_OPTS[gdbindex]})); then
+        CB_BIN_LFLAGS+=("-Wl,--gdb-index")
+        CB_LIB_LFLAGS+=("-Wl,--gdb-index")
     fi
 
     if (($CPKG_IS_PKGSRC)); then
