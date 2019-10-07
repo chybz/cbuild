@@ -48,7 +48,15 @@ public:
             sys_var_lib_dir_ = %{ ${PRJ_DEFPREFIX} }%SYSVARDIR;
             var_log_dir_ = %{ ${PRJ_DEFPREFIX} }%LOGDIR;
             var_run_dir_ = %{ ${PRJ_DEFPREFIX} }%RUNDIR;
-            plugins_dir_ = %{ ${PRJ_DEFPREFIX} }%PLUGDIR;
+
+            std::string plugins_vars{ "%{ ${PNAME} }%_PLUGINS" };
+
+            if (auto pdir = std::getenv(plugins_vars.c_str())) {
+                plugins_dir_.assign(pdir);
+            } else {
+                plugins_dir_ = %{ ${PRJ_DEFPREFIX} }%PLUGDIR;
+            }
+
             test_etc_dir_ = "/you/should/not/use/this/when/installed";
             test_data_dir_ = "/you/should/not/use/this/when/installed";
             test_tmp_dir_ = "/you/should/not/use/this/when/installed";
@@ -108,6 +116,36 @@ public:
 
     plugin_list find_plugins() const
     { return find_plugins(plugins_dir_); }
+
+    plugin_list find_plugins(const std::string& dir) const
+    {
+        plugin_list plugins;
+
+        DIR* dirh;
+
+        if ((dirh = opendir(dir.c_str())) != NULL) {
+            struct dirent* entry;
+
+            while ((entry = readdir(dirh)) != NULL) {
+                std::string plugin_path = dir;
+                plugin_path += "/";
+                plugin_path += entry->d_name;
+                std::string::size_type pos;
+
+                if (
+                    (pos = plugin_path.rfind(".so"))
+                    ==
+                    (plugin_path.size() - 3)
+                ) {
+                    plugins.push_back(plugin_path);
+                }
+            }
+
+            closedir(dirh);
+        }
+
+        return plugins;
+    }
 
     plugin_list find_external_plugins(const std::string& name) const
     {
@@ -204,36 +242,6 @@ private:
         std::string path = buf;
 
         return path;
-    }
-
-    plugin_list find_plugins(const std::string& dir) const
-    {
-        plugin_list plugins;
-
-        DIR* dirh;
-
-        if ((dirh = opendir(dir.c_str())) != NULL) {
-            struct dirent* entry;
-
-            while ((entry = readdir(dirh)) != NULL) {
-                std::string plugin_path = dir;
-                plugin_path += "/";
-                plugin_path += entry->d_name;
-                std::string::size_type pos;
-
-                if (
-                    (pos = plugin_path.rfind(".so"))
-                    ==
-                    (plugin_path.size() - 3)
-                ) {
-                    plugins.push_back(plugin_path);
-                }
-            }
-
-            closedir(dirh);
-        }
-
-        return plugins;
     }
 
     bool local_mode_;
