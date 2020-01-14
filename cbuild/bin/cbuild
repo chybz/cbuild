@@ -41,7 +41,7 @@ OPTSPECS[l]="LEAK_SANITIZER::enable leak sanitizer:no"
 OPTSPECS[u]="UNDEFINED_SANITIZER::enable undefined sanitizer:no"
 OPTSPECS[c]="COVERAGE::enable coverage:no"
 OPTSPECS[p]="PROFILING::enable profiling:no"
-OPTSPECS[D]="CB_DEBUG::enable debug mode:no"
+OPTSPECS[D]="SPLIT_DWARF::enable split dwarf debug mode:no"
 OPTSPECS[G]="CMAKE_GEN:STRING:choose CMake generator:Unix Makefiles"
 OPTSPECS[P]="PKG_UPDATE::update via system package ($CPKG_TYPE):no"
 OPTSPECS[y]="CB_YES::assume yes:no"
@@ -66,7 +66,7 @@ PRJ_OPTS[usan]=$UNDEFINED_SANITIZER
 [ $DONT_OPTIMIZE -eq 1 ] || PRJ_OPTS[optimize]=1
 PRJ_OPTS[coverage]=$COVERAGE
 PRJ_OPTS[profiling]=$PROFILING
-PRJ_OPTS[debug]=$CB_DEBUG
+PRJ_OPTS[splitdwarf]=$SPLIT_DWARF
 PRJ_OPTS[timings]=$TIMINGS
 PRJ_OPTS[services]=$CB_SERVICES
 

@@ -834,10 +834,6 @@ function cb_configure_compiler_flags() {
         CB_CXXFLAGS+=("-std=${PRJ_OPTS[std]}")
     fi
 
-    if ((${PRJ_OPTS[debug]})); then
-        CB_GEN_FLAGS+=("-DDEBUG")
-    fi
-
     if (($CB_CC_IS_CLANG)); then
         CB_CXXFLAGS+=("-Wno-unused-local-typedef")
         CB_CXXFLAGS+=("-stdlib=libc++" "-ftemplate-depth=512")
@@ -865,7 +861,7 @@ function cb_configure_compiler_flags() {
         CB_GEN_FLAGS+=("-g")
     fi
 
-    if ((${PRJ_OPTS[gdbindex]})); then
+    if ((${PRJ_OPTS[splitdwarf]})); then
         CB_GEN_FLAGS+=("-gsplit-dwarf")
     fi
 
