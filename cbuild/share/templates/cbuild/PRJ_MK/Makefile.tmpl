@@ -88,11 +88,21 @@ test-report: tests
 test-report-jenkins: tests
 	@rm -rf build/tap-reports
 	@mkdir -p build/tap-reports
-	@echo "building TAP reports"
+	@echo "building JENKINS reports"
 	@cd build && for T in t/*.t; do \
 		env PRJ_BINDIR=$(PRJ_BINDIR) prove \
 			-v -m -e '' $$T | \
 		tee tap-reports/`basename $$T .t`.tap; \
+	done
+
+test-report-junit: tests
+	@rm -rf build/junit-reports
+	@mkdir -p build/junit-reports
+	@echo "building JUNIT reports"
+	@cd build && for T in t/*.t; do \
+		env PRJ_BINDIR=$(PRJ_BINDIR) CPP_OUTPUT_JUNIT_TEST=1 \
+			$$T --log_format=JUNIT > \
+		junit-reports/`basename $$T .t`.xml; \
 	done
 
 coverage-report:

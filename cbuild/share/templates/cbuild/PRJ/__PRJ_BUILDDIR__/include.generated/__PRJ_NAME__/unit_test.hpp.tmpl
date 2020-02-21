@@ -17,6 +17,10 @@ struct tap_config
     {
         setenv("CB_TEST", "1", 1);
 
+        if (getenv("CPP_OUTPUT_JUNIT_TEST") != NULL) {
+            return;
+        }
+        
         boost::unit_test::unit_test_log.set_formatter(
             new cbuild::%{ ${NSNAME} }%::unit_test::tap_formatter
         );
