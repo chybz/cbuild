@@ -31,8 +31,13 @@ public:
         ost.flush();
     }
 
+#if BOOST_VERSION < 107100
     void log_build_info(std::ostream& ost)
     {}
+#else
+    void log_build_info(std::ostream& ost, bool log_build_info = true)
+    {}
+#endif
 
     void test_unit_start(std::ostream& ost, but::test_unit const& tu)
     {
