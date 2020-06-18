@@ -289,7 +289,7 @@ function cb_load_autolink() {
     for RE in ${!AUTOLINK[@]}; do
         # Resolve full package names
         local -a SPEC=(${AUTOLINK[$RE]})
-        #SPEC[1]=$(lp_full_pkg_name ${SPEC[1]})
+
         CB_AUTOLINK[$RE]="${SPEC[@]}"
         CB_AUTOLINK_GROUP[$RE]=${GROUP^^}
     done
@@ -1068,7 +1068,7 @@ function cb_autolink() {
     local PKG
 
     for RE in ${!CB_AUTOLINK[@]}; do
-        if [[ $HEADER =~ $RE ]]; then
+        if [[ $HEADER =~ ^$RE ]]; then
             local -a SPEC=(${CB_AUTOLINK[$RE]})
             PC=${SPEC[0]}
 
